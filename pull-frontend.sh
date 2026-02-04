@@ -25,11 +25,12 @@ if [[ ! "$TARGET_DIR" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_-]*(/[a-zA-Z0-9_][a-zA-Z0-9_-]*
     exit 1
 fi
 
-# Prevent excessive directory nesting (max 3 levels)
+# Prevent excessive directory nesting (max 3 directory components: a/b/c)
+# Count the number of slashes - 2 slashes = 3 components
 DEPTH=$(echo "$TARGET_DIR" | tr -cd '/' | wc -c)
 if [ "$DEPTH" -gt 2 ]; then
     echo -e "${RED}Error: Directory path is too deeply nested.${NC}"
-    echo -e "${YELLOW}Maximum of 3 directory levels allowed (e.g., 'level1/level2/level3').${NC}"
+    echo -e "${YELLOW}Maximum of 3 directory components allowed (e.g., 'level1/level2/level3').${NC}"
     exit 1
 fi
 
@@ -65,8 +66,11 @@ git sparse-checkout set frontend
 # Checkout the files (explicitly use main branch)
 git checkout main
 
-echo -e "${GREEN}Success! Frontend folder cloned to $TARGET_DIR${NC}"
+# Get absolute path for clearer success message
+ABS_PATH=$(pwd)
+
+echo -e "${GREEN}Success! Frontend folder cloned to $ABS_PATH${NC}"
 echo -e "${YELLOW}Next steps:${NC}"
-echo "  cd $TARGET_DIR/frontend"
+echo "  cd $ABS_PATH/frontend"
 echo "  npm install"
 echo "  npm run dev"
