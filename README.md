@@ -64,7 +64,7 @@ git clone --no-checkout https://github.com/vatsalpjain/Murph.git murph-backend
 cd murph-backend
 git sparse-checkout init --cone
 git sparse-checkout set backend
-git checkout
+git checkout main
 ```
 
 See `backend/README.md` for backend documentation.
