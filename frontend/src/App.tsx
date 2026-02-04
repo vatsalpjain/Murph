@@ -20,11 +20,11 @@ function App() {
         <AuthModal />
         
         <Routes>
-          {/* Home route - displays landing page */}
-          <Route path="/" element={<LandingPage />} />
+          {/* Main home route - displays home page */}
+          <Route path="/" element={<HomePage />} />
           
-          {/* Home page - main app page after login */}
-          <Route path="/home" element={<HomePage />} />
+          {/* Landing page - marketing page */}
+          <Route path="/landing" element={<LandingPage />} />
           
           {/* Dashboard route - displays account dashboard */}
           <Route path="/dashboard" element={<AccountDashboard />} />

@@ -1,18 +1,25 @@
 import React from 'react';
 import { Bell, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 interface NavbarProps {
   walletBalance: number;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ walletBalance }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   return (
     <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-700/50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <div className="text-2xl font-bold text-white tracking-wider">
+            <div 
+              className="text-2xl font-bold text-white tracking-wider cursor-pointer hover:text-emerald-400 transition-colors"
+              onClick={() => navigate('/')}
+            >
               MURPH
             </div>
           </div>
@@ -45,9 +52,12 @@ const Navbar: React.FC<NavbarProps> = ({ walletBalance }) => {
             </button>
 
             {/* Profile */}
-            <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+            <button 
+              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              onClick={() => navigate('/dashboard')}
+            >
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm font-bold">
-                A
+                {user?.name?.charAt(0).toUpperCase() || 'A'}
               </div>
             </button>
 

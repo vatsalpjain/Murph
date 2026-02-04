@@ -1,11 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import TeacherDashboard from './pages/teacher_dashboard'
+import App from './App'
 
-// Entry point - renders the TeacherDashboard component
+// Entry point - renders the main App component with routing
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <TeacherDashboard />
+    <App />
   </StrictMode>,
 )

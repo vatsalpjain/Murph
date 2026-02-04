@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setShowAuthModal(false);
 
       // Navigate to home page after successful login
-      navigate('/home');
+      navigate('/');
     } catch (error) {
       throw error;
     }
@@ -122,7 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setShowAuthModal(false);
 
       // Navigate to home page after successful signup
-      navigate('/home');
+      navigate('/');
     } catch (error) {
       throw error;
     }
