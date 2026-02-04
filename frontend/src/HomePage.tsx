@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import ResumeCard from '../components/ResumeCard';
 import CourseCard from '../components/CourseCard';
 import Footer from '../components/Footer';
 import CourseShortsPreview from '../components/CourseShortsPreview';
+import ChatBot from '../components/ChatBot';
 import type { Short } from '../components/CourseShortsPreview';
 
 // Mock Data
@@ -164,7 +164,6 @@ const mockInstructors = [
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [walletBalance] = useState<number>(125.50);
-  const [chatOpen, setChatOpen] = useState(false);
   const [shorts, setShorts] = useState<Short[]>([]);
 
   // Load course shorts metadata
@@ -376,47 +375,8 @@ const HomePage: React.FC = () => {
       {/* Footer */}
       <Footer />
 
-      {/* Floating AI Chat Button */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <button
-          onClick={() => setChatOpen(!chatOpen)}
-          className="w-14 h-14 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/70 transition-all duration-300 flex items-center justify-center hover:scale-110 group"
-        >
-          <MessageCircle className="w-6 h-6" />
-          <span className="absolute bottom-full right-0 mb-3 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity border border-gray-700">
-            Ask Murph AI
-          </span>
-        </button>
-
-        {/* Chat Modal (Placeholder) */}
-        {chatOpen && (
-          <div className="absolute bottom-20 right-0 w-80 h-96 bg-gray-800 rounded-lg shadow-2xl border border-gray-700 flex flex-col">
-            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 rounded-t-lg flex justify-between items-center">
-              <h3 className="font-semibold">Murph AI Assistant</h3>
-              <button
-                onClick={() => setChatOpen(false)}
-                className="text-xl hover:opacity-80"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="flex-1 p-4 overflow-y-auto">
-              <div className="mb-4">
-                <p className="text-sm text-gray-200 bg-gray-700 rounded-lg p-3 inline-block">
-                  Hi! 👋 I'm Murph AI. How can I help you find the perfect session?
-                </p>
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-700">
-              <input
-                type="text"
-                placeholder="Ask something..."
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-              />
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Floating Chat Bot */}
+      <ChatBot />
     </div>
   );
 };
