@@ -15,10 +15,12 @@ REPO_URL="https://github.com/vatsalpjain/Murph.git"
 TARGET_DIR="${1:-murph-frontend}"
 
 # Validate target directory name to prevent path traversal and other security issues
-# Only allow alphanumeric, dash, underscore, and single forward slashes for subdirectories
-if [[ ! "$TARGET_DIR" =~ ^[a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*$ ]]; then
+# Directory names must start with alphanumeric or underscore, and can contain dashes
+# This prevents command injection through directory names like "-rf"
+if [[ ! "$TARGET_DIR" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_-]*(/[a-zA-Z0-9_][a-zA-Z0-9_-]*)*$ ]]; then
     echo -e "${RED}Error: Invalid target directory name.${NC}"
-    echo -e "${YELLOW}Directory name must contain only letters, numbers, dashes, and underscores.${NC}"
+    echo -e "${YELLOW}Directory name must start with a letter, number, or underscore.${NC}"
+    echo -e "${YELLOW}It can contain letters, numbers, dashes, and underscores.${NC}"
     echo -e "${YELLOW}You can use forward slashes for subdirectories (e.g., 'projects/murph-frontend').${NC}"
     exit 1
 fi
@@ -32,8 +34,8 @@ fi
 
 echo -e "${YELLOW}Cloning frontend folder from Murph repository...${NC}"
 
-# Clone with no checkout
-git clone --no-checkout "$REPO_URL" "$TARGET_DIR"
+# Clone with no checkout, explicitly from main branch
+git clone --no-checkout --branch main "$REPO_URL" "$TARGET_DIR"
 
 cd "$TARGET_DIR"
 
