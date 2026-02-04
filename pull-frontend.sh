@@ -28,8 +28,8 @@ git sparse-checkout init --cone
 echo -e "${YELLOW}Pulling frontend folder...${NC}"
 git sparse-checkout set frontend
 
-# Checkout the files
-git checkout
+# Checkout the files (explicitly use main branch)
+git checkout main
 
 echo -e "${GREEN}Success! Frontend folder cloned to $TARGET_DIR${NC}"
 echo -e "${YELLOW}Next steps:${NC}"

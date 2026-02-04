@@ -17,8 +17,8 @@ git sparse-checkout init --cone
 # Pull only the frontend folder
 git sparse-checkout set frontend
 
-# Checkout the files
-git checkout
+# Checkout the files (main branch)
+git checkout main
 ```
 
 ### Install Dependencies

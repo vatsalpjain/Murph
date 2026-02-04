@@ -24,23 +24,14 @@ cd Murph
 
 If you only need the frontend, you can clone just that folder using sparse checkout:
 
-**Option 1: Use the helper script**
-
-```bash
-# Clone and run the script
-git clone https://github.com/vatsalpjain/Murph.git
-cd Murph
-./pull-frontend.sh ../murph-frontend
-```
-
-**Option 2: Manual sparse checkout**
+**Option 1: Manual sparse checkout**
 
 ```bash
 git clone --no-checkout https://github.com/vatsalpjain/Murph.git murph-frontend
 cd murph-frontend
 git sparse-checkout init --cone
 git sparse-checkout set frontend
-git checkout
+git checkout main
 ```
 
 Then install and run:
@@ -49,6 +40,17 @@ Then install and run:
 cd frontend
 npm install
 npm run dev
+```
+
+**Option 2: Use the helper script** (requires downloading the script first)
+
+```bash
+# Download the script
+curl -O https://raw.githubusercontent.com/vatsalpjain/Murph/main/pull-frontend.sh
+chmod +x pull-frontend.sh
+
+# Run it
+./pull-frontend.sh murph-frontend
 ```
 
 See [`frontend/SETUP.md`](frontend/SETUP.md) for detailed frontend documentation.
