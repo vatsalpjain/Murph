@@ -1,20 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 /**
- * Complete YouTube Gated Video Player with Wallet Integration
+ * YouTube Gated Video Player with Session-Based Payments
  * 
  * Features:
- * - Free preview (configurable duration)
+ * - Free preview (2 minutes)
  * - Payment gate at preview end
  * - ₹30 escrow lock with ₹2/min billing
  * - Live billing meter
  * - Session end with automatic refund
- * - Wallet balance display and deposit
  */
 
 const GatedVideoPlayer = () => {
-    // User and wallet state
-    const [userBalance, setUserBalance] = useState(0);
+    const navigate = useNavigate();
+    
+    // User state
     const userId = "ANNA_01"; // Change this to dynamic user ID in production
 
     // Video player state
@@ -29,23 +30,6 @@ const GatedVideoPlayer = () => {
     const VIDEO_ID = "dQw4w9WgXcQ"; // Replace with your YouTube video ID
     const PREVIEW_LIMIT = 120; // Free preview duration in seconds (2 minutes)
     const BACKEND_URL = "http://localhost:8000";
-
-    // Fetch wallet balance on mount
-    useEffect(() => {
-        fetchBalance();
-    }, []);
-
-    const fetchBalance = async () => {
-        try {
-            const res = await fetch(`${BACKEND_URL}/wallet/${userId}`);
-            if (res.ok) {
-                const data = await res.json();
-                setUserBalance(data.balance);
-            }
-        } catch (error) {
-            console.error('Failed to fetch balance:', error);
-        }
-    };
 
     // Initialize YouTube player
     useEffect(() => {
@@ -154,23 +138,28 @@ const GatedVideoPlayer = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-            {/* Header with Wallet */}
+            {/* Header */}
             <header className="bg-white border-b border-gray-200 sticky top-0 z-40 backdrop-blur-lg bg-white/80">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#B5A1D6] to-[#9B7EC4] rounded-2xl flex items-center justify-center shadow-lg">
-                                <span className="text-xl">🎨</span>
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => navigate('/')}
+                                className="text-gray-600 hover:text-gray-900 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-br from-[#B5A1D6] to-[#9B7EC4] rounded-2xl flex items-center justify-center shadow-lg">
+                                    <span className="text-xl">🎨</span>
+                                </div>
+                                <div>
+                                    <h1 className="text-xl font-bold text-[#1A1A1A]">Video Learning Platform</h1>
+                                    <p className="text-sm text-gray-500">Pay-per-minute streaming</p>
+                                </div>
                             </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-[#1A1A1A]">Video Learning Platform</h1>
-                                <p className="text-sm text-gray-500">Pay-per-minute streaming</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-[#B5A1D6]/10 to-[#9B7EC4]/10 px-8 py-4 rounded-2xl border border-[#B5A1D6]/20">
-                            <p className="text-xs text-gray-600 font-medium mb-1">Wallet Balance</p>
-                            <p className="text-2xl font-bold text-[#B5A1D6]">₹{userBalance.toFixed(2)}</p>
                         </div>
                     </div>
                 </div>

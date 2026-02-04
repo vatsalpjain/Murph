@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 // Custom styles for animations
 const customStyles = `
@@ -80,6 +81,7 @@ const courseShowcase = [
 
 const LandingPage = () => {
     const navigate = useNavigate();
+    const { isAuthenticated, user, setShowAuthModal, logout } = useAuth();
     const blobsRef = useRef<HTMLDivElement[]>([]);
     const [scrolled, setScrolled] = useState(false);
     const [slideIndex, setSlideIndex] = useState<Record<number, number>>({});
@@ -178,18 +180,46 @@ const LandingPage = () => {
                             <span className="font-bebas text-3xl tracking-[0.3em] cursor-pointer" onClick={() => navigate('/')}>MURPH</span>
                         </div>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 items-center">
                         <button 
                             onClick={() => navigate('/video-player')}
                             className="font-sans text-sm md:text-base font-medium px-6 md:px-10 py-3 md:py-4 rounded-xl cursor-pointer transition-all duration-300 ease-out bg-transparent border border-white/30 text-white hover:border-purple-400 hover:text-purple-400 hover:shadow-[0_0_20px_rgba(180,160,220,0.4),0_0_40px_rgba(180,160,220,0.2),inset_0_0_20px_rgba(180,160,220,0.05)] hover:-translate-y-0.5">
                             Watch Demo
                         </button>
-                        <button className="font-sans text-sm md:text-base font-medium px-6 md:px-10 py-3 md:py-4 rounded-xl cursor-pointer transition-all duration-300 ease-out bg-transparent border border-white/30 text-white hover:border-teal-400 hover:text-teal-400 hover:shadow-[0_0_20px_rgba(0,200,180,0.4),0_0_40px_rgba(0,200,180,0.2),inset_0_0_20px_rgba(0,200,180,0.05)] hover:-translate-y-0.5">
-                            Login
-                        </button>
-                        <button className="font-sans text-sm md:text-base font-medium px-6 md:px-10 py-3 md:py-4 rounded-xl cursor-pointer transition-all duration-300 ease-out bg-gradient-to-br from-teal-500 to-blue-600 border-transparent text-white hover:from-teal-400 hover:to-blue-500 hover:shadow-[0_0_30px_rgba(0,200,180,0.6),0_0_60px_rgba(0,180,160,0.4),0_0_90px_rgba(0,150,200,0.2)] hover:-translate-y-0.5">
-                            Sign Up
-                        </button>
+                        
+                        {isAuthenticated ? (
+                            <>
+                                <button 
+                                    onClick={() => navigate('/dashboard')}
+                                    className="font-sans text-sm md:text-base font-medium px-6 md:px-10 py-3 md:py-4 rounded-xl cursor-pointer transition-all duration-300 ease-out bg-transparent border border-white/30 text-white hover:border-teal-400 hover:text-teal-400 hover:shadow-[0_0_20px_rgba(0,200,180,0.4),0_0_40px_rgba(0,200,180,0.2),inset_0_0_20px_rgba(0,200,180,0.05)] hover:-translate-y-0.5">
+                                    Dashboard
+                                </button>
+                                <div className="flex items-center gap-3">
+                                    <span className="text-white/80 text-sm hidden md:block">
+                                        {user?.name}
+                                    </span>
+                                    <button
+                                        onClick={logout}
+                                        className="font-sans text-sm md:text-base font-medium px-6 md:px-10 py-3 md:py-4 rounded-xl cursor-pointer transition-all duration-300 ease-out bg-white/10 border border-white/30 text-white hover:bg-white/20 hover:border-white/50 hover:-translate-y-0.5"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => setShowAuthModal(true)}
+                                    className="font-sans text-sm md:text-base font-medium px-6 md:px-10 py-3 md:py-4 rounded-xl cursor-pointer transition-all duration-300 ease-out bg-transparent border border-white/30 text-white hover:border-teal-400 hover:text-teal-400 hover:shadow-[0_0_20px_rgba(0,200,180,0.4),0_0_40px_rgba(0,200,180,0.2),inset_0_0_20px_rgba(0,200,180,0.05)] hover:-translate-y-0.5">
+                                    Log In
+                                </button>
+                                <button 
+                                    onClick={() => setShowAuthModal(true)}
+                                    className="font-sans text-sm md:text-base font-medium px-6 md:px-10 py-3 md:py-4 rounded-xl cursor-pointer transition-all duration-300 ease-out bg-gradient-to-br from-teal-500 to-blue-600 border-transparent text-white hover:from-teal-400 hover:to-blue-500 hover:shadow-[0_0_30px_rgba(0,200,180,0.6),0_0_60px_rgba(0,180,160,0.4),0_0_90px_rgba(0,150,200,0.2)] hover:-translate-y-0.5">
+                                    Join for Free
+                                </button>
+                            </>
+                        )}
                     </div>
                 </nav>
 

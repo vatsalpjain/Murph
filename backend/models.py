@@ -1,13 +1,66 @@
 """
 Pydantic models for API request/response validation
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 from datetime import datetime
 from decimal import Decimal
 
 
-# Session Models
+# ============================================================================
+# AUTHENTICATION MODELS
+# ============================================================================
+
+class SignupRequest(BaseModel):
+    """User registration with email/password"""
+    email: EmailStr
+    password: str = Field(min_length=8, description="Password (min 8 characters)")
+    name: str = Field(min_length=2, max_length=100)
+    role: str = Field(pattern="^(student|teacher)$", description="User role: student or teacher")
+
+
+class LoginRequest(BaseModel):
+    """User login with email/password"""
+    email: EmailStr
+    password: str
+
+
+class GoogleLoginRequest(BaseModel):
+    """Google OAuth login with ID token"""
+    google_token: str = Field(description="Google OAuth ID token")
+
+
+class AuthResponse(BaseModel):
+    """Authentication response with user data and tokens"""
+    user: dict
+    session: dict
+    message: str
+
+
+class UserResponse(BaseModel):
+    """Current user profile response"""
+    id: str
+    email: str
+    name: str
+    role: str
+    is_active: bool
+    created_at: datetime
+    wallet_address: Optional[str] = None
+
+
+class LogoutResponse(BaseModel):
+    """Logout response"""
+    message: str
+
+
+class RoleUpdateRequest(BaseModel):
+    """Request to update user role"""
+    new_role: str = Field(pattern="^(student|teacher)$")
+
+
+# ============================================================================
+# SESSION MODELS
+# ============================================================================
 class SessionCreateRequest(BaseModel):
     course_id: str
     student_id: str
