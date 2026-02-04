@@ -8,6 +8,10 @@ from database import supabase
 from collections import defaultdict
 
 
+# Mock data for test user (development only)
+TEST_USER_ID = "test-admin-001"
+
+
 class AnalyticsService:
     """Manages user analytics and statistics"""
     
@@ -17,6 +21,16 @@ class AnalyticsService:
         Get comprehensive user analytics
         Returns: total watch time, videos watched, current streak, active domains
         """
+        # Return mock data for test user
+        if user_id == TEST_USER_ID:
+            return {
+                "total_hours_watched": 24.5,
+                "total_videos_watched": 42,
+                "current_streak": 7,
+                "longest_streak": 14,
+                "active_domains": 5
+            }
+        
         try:
             # Fetch all completed sessions for the user
             sessions_response = supabase.table("sessions")\
@@ -127,6 +141,25 @@ class AnalyticsService:
         Get watch calendar data for the last N days
         Returns array of days with watched status
         """
+        # Return mock data for test user
+        if user_id == TEST_USER_ID:
+            today = datetime.utcnow().date()
+            calendar_days = []
+            for i in range(days - 1, -1, -1):
+                date = today - timedelta(days=i)
+                # Mock: watched on random days (simulate a 7-day streak)
+                watched = i < 7 or (i % 3 == 0)
+                calendar_days.append({
+                    "day": date.day,
+                    "date": date.isoformat(),
+                    "watched": watched
+                })
+            return {
+                "calendar_days": calendar_days,
+                "current_streak": 7,
+                "longest_streak": 14
+            }
+        
         try:
             # Fetch sessions from last N days
             start_date = datetime.utcnow() - timedelta(days=days - 1)
@@ -183,6 +216,27 @@ class AnalyticsService:
         Get domain/category-wise analytics
         Returns hours per domain and weekly breakdown
         """
+        # Return mock data for test user
+        if user_id == TEST_USER_ID:
+            return {
+                "domains": [
+                    {"name": "Web Development", "hours": 8.5, "color": "bg-blue-500"},
+                    {"name": "Machine Learning", "hours": 6.2, "color": "bg-orange-500"},
+                    {"name": "Data Structures", "hours": 4.8, "color": "bg-green-500"},
+                    {"name": "Computer Science", "hours": 3.0, "color": "bg-purple-500"},
+                    {"name": "Design", "hours": 2.0, "color": "bg-yellow-500"},
+                ],
+                "weekly_data": [
+                    {"day": "Mon", "hours": 2.5},
+                    {"day": "Tue", "hours": 3.0},
+                    {"day": "Wed", "hours": 1.5},
+                    {"day": "Thu", "hours": 4.0},
+                    {"day": "Fri", "hours": 2.0},
+                    {"day": "Sat", "hours": 5.5},
+                    {"day": "Sun", "hours": 3.5},
+                ]
+            }
+        
         try:
             # Fetch completed sessions with course data
             sessions_response = supabase.table("sessions")\
@@ -278,6 +332,51 @@ class AnalyticsService:
         Get user's session history with course details
         Returns recent sessions with progress and payment info
         """
+        # Return mock data for test user
+        if user_id == TEST_USER_ID:
+            return [
+                {
+                    "id": "mock-session-1",
+                    "title": "React Advanced Patterns",
+                    "domain": "Web Development",
+                    "duration": "45:00",
+                    "watched": "32:15",
+                    "date": "Today",
+                    "progress": 72,
+                    "status": "completed"
+                },
+                {
+                    "id": "mock-session-2",
+                    "title": "Neural Networks Deep Dive",
+                    "domain": "Machine Learning",
+                    "duration": "60:00",
+                    "watched": "60:00",
+                    "date": "Yesterday",
+                    "progress": 100,
+                    "status": "completed"
+                },
+                {
+                    "id": "mock-session-3",
+                    "title": "Binary Trees & Graphs",
+                    "domain": "Data Structures",
+                    "duration": "30:00",
+                    "watched": "18:45",
+                    "date": "2 days ago",
+                    "progress": 63,
+                    "status": "completed"
+                },
+                {
+                    "id": "mock-session-4",
+                    "title": "System Design Basics",
+                    "domain": "Computer Science",
+                    "duration": "55:00",
+                    "watched": "55:00",
+                    "date": "3 days ago",
+                    "progress": 100,
+                    "status": "completed"
+                },
+            ]
+        
         try:
             # Fetch sessions with course information
             sessions_response = supabase.table("sessions")\

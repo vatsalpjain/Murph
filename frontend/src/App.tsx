@@ -1,5 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute';
 import AuthModal from './components/AuthModal';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
@@ -8,29 +9,52 @@ import VideoPlayer from './pages/VideoPlayer';
 import './App.css';
 
 /**
- * Main App component - handles routing and authentication
- * Wrapped with AuthProvider for global auth state
- * AuthModal appears as overlay when triggered
+ * Main App - Routing Logic:
+ * 
+ * /landing    → PublicRoute  → Only for non-authenticated users
+ * /           → ProtectedRoute → Only for authenticated users (HomePage)
+ * /dashboard  → ProtectedRoute → Only for authenticated users
+ * /video-player → ProtectedRoute → Only for authenticated users
+ * /*          → Redirect to / (catch-all for 404s)
  */
 function App() {
   return (
     <Router>
       <AuthProvider>
-        {/* Auth modal overlay - shown when user clicks login/signup */}
+        {/* Auth modal - shown when user clicks login/signup */}
         <AuthModal />
         
         <Routes>
-          {/* Main home route - displays home page */}
-          <Route path="/" element={<HomePage />} />
+          {/* Landing page - only for non-authenticated users */}
+          <Route path="/landing" element={
+            <PublicRoute>
+              <LandingPage />
+            </PublicRoute>
+          } />
           
-          {/* Landing page - marketing page */}
-          <Route path="/landing" element={<LandingPage />} />
+          {/* Home page - requires authentication */}
+          <Route path="/" element={
+            <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
+          } />
           
-          {/* Dashboard route - displays account dashboard */}
-          <Route path="/dashboard" element={<AccountDashboard />} />
+          {/* Dashboard - requires authentication */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <AccountDashboard />
+            </ProtectedRoute>
+          } />
           
-          {/* Video player route - gated video streaming with wallet */}
-          <Route path="/video-player" element={<VideoPlayer />} />
+          {/* Video player - requires authentication */}
+          <Route path="/video-player" element={
+            <ProtectedRoute>
+              <VideoPlayer />
+            </ProtectedRoute>
+          } />
+
+          {/* Catch-all: redirect invalid URLs to home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </Router>

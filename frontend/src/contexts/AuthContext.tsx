@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiClient, BACKEND_URL } from '../utils/api';
 
 /**
  * Authentication Context for managing user session and auth state
@@ -47,47 +48,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
   const navigate = useNavigate();
 
-  const BACKEND_URL = 'http://localhost:8000';
-
-  // Initialize auth state from localStorage on mount and validate session
+  // Initialize auth state - Restore session from localStorage if valid
   useEffect(() => {
     const initializeAuth = async () => {
-      const storedUser = localStorage.getItem('user');
-      const storedSession = localStorage.getItem('session');
-
-      if (storedUser && storedSession) {
-        try {
-          const parsedSession = JSON.parse(storedSession);
-
-          // Validate the token with the backend
+      try {
+        const storedUser = localStorage.getItem('user');
+        const storedSession = localStorage.getItem('session');
+        
+        if (storedUser && storedSession) {
+          const user = JSON.parse(storedUser);
+          const session = JSON.parse(storedSession);
+          
+          // Verify token is still valid with backend
           const response = await fetch(`${BACKEND_URL}/auth/me`, {
-            method: 'GET',
             headers: {
-              'Authorization': `Bearer ${parsedSession.access_token}`,
+              'Authorization': `Bearer ${session.access_token}`,
               'Content-Type': 'application/json',
             },
           });
-
+          
           if (response.ok) {
-            // Token is valid, restore the session
-            const userData = await response.json();
-            setUser(userData);
-            setSession(parsedSession);
+            // Token is valid, restore session
+            setUser(user);
+            setSession(session);
           } else {
-            // Token is invalid/expired, clear stored data
-            console.log('Stored session is invalid, clearing...');
+            // Token invalid or expired, clear storage
             localStorage.removeItem('user');
             localStorage.removeItem('session');
           }
-        } catch (error) {
-          // Network error or parsing error, clear stored data
-          console.error('Error validating session:', error);
-          localStorage.removeItem('user');
-          localStorage.removeItem('session');
         }
+      } catch (error) {
+        console.error('Auth initialization failed:', error);
+        // Clear invalid data
+        localStorage.removeItem('user');
+        localStorage.removeItem('session');
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
 
     initializeAuth();
@@ -96,11 +93,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Login with email/password
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await apiClient.post('/auth/login', 
+        { email, password },
+        { requiresAuth: false }
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -133,11 +129,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     role: 'student' | 'teacher'
   ) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name, role }),
-      });
+      const response = await apiClient.post('/auth/signup',
+        { email, password, name, role },
+        { requiresAuth: false }
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -163,15 +158,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Logout
-  const logout = () => {
-    // Clear state
-    setUser(null);
-    setSession(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('session');
+  const logout = async () => {
+    try {
+      // Call backend to invalidate session
+      await apiClient.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Continue with local logout even if backend call fails
+    } finally {
+      // Clear state
+      setUser(null);
+      setSession(null);
+      localStorage.removeItem('user');
+      localStorage.removeItem('session');
 
-    // Navigate to landing page
-    navigate('/landing');
+      // Navigate to landing page
+      navigate('/landing');
+    }
   };
 
   const value = {

@@ -413,9 +413,15 @@ const AccountDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirect to home if not authenticated
+  // Redirect to home if not authenticated - only once
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Early return if not authenticated to prevent rendering
   if (!isAuthenticated) {
-    navigate('/');
     return null;
   }
 

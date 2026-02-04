@@ -177,10 +177,14 @@ const HomePage: React.FC = () => {
           setShorts(Array.isArray(data) ? data : (data.shorts || []));
           console.log('Loaded shorts:', data);
         } else {
-          console.error('Failed to fetch shorts metadata:', response.status);
+          // File not found, use empty array
+          console.log('No shorts metadata found, using empty array');
+          setShorts([]);
         }
       } catch (error) {
-        console.error('Error loading shorts:', error);
+        // Silently handle error and use empty array
+        console.log('No shorts available');
+        setShorts([]);
       }
     };
     loadShorts();
