@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -11,10 +11,17 @@ import { useAuth } from '../contexts/AuthContext';
 type AuthMode = 'login' | 'signup';
 
 export default function AuthModal() {
-  const { showAuthModal, setShowAuthModal, login, signup } = useAuth();
-  const [mode, setMode] = useState<AuthMode>('login');
+  const { showAuthModal, setShowAuthModal, login, signup, authModalMode } = useAuth();
+  const [mode, setMode] = useState<AuthMode>(authModalMode);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Sync local mode with context mode when modal opens
+  useEffect(() => {
+    if (showAuthModal) {
+      setMode(authModalMode);
+    }
+  }, [showAuthModal, authModalMode]);
 
   // Form fields
   const [email, setEmail] = useState('');
@@ -140,22 +147,20 @@ export default function AuthModal() {
                   <button
                     type="button"
                     onClick={() => setRole('student')}
-                    className={`flex-1 py-3 px-4 rounded-lg border-2 font-medium transition-all ${
-                      role === 'student'
+                    className={`flex-1 py-3 px-4 rounded-lg border-2 font-medium transition-all ${role === 'student'
                         ? 'border-blue-600 bg-blue-50 text-blue-600'
                         : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                    }`}
+                      }`}
                   >
                     Student
                   </button>
                   <button
                     type="button"
                     onClick={() => setRole('teacher')}
-                    className={`flex-1 py-3 px-4 rounded-lg border-2 font-medium transition-all ${
-                      role === 'teacher'
+                    className={`flex-1 py-3 px-4 rounded-lg border-2 font-medium transition-all ${role === 'teacher'
                         ? 'border-blue-600 bg-blue-50 text-blue-600'
                         : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                    }`}
+                      }`}
                   >
                     Teacher
                   </button>

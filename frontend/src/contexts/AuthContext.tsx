@@ -33,6 +33,8 @@ interface AuthContextType {
   logout: () => void;
   showAuthModal: boolean;
   setShowAuthModal: (show: boolean) => void;
+  authModalMode: 'login' | 'signup';
+  setAuthModalMode: (mode: 'login' | 'signup') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,21 +44,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
   const navigate = useNavigate();
 
   const BACKEND_URL = 'http://localhost:8000';
 
-  // Initialize auth state from localStorage on mount
+  // Initialize auth state from localStorage on mount and validate session
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const storedSession = localStorage.getItem('session');
+    const initializeAuth = async () => {
+      const storedUser = localStorage.getItem('user');
+      const storedSession = localStorage.getItem('session');
 
-    if (storedUser && storedSession) {
-      setUser(JSON.parse(storedUser));
-      setSession(JSON.parse(storedSession));
-    }
+      if (storedUser && storedSession) {
+        try {
+          const parsedSession = JSON.parse(storedSession);
 
-    setIsLoading(false);
+          // Validate the token with the backend
+          const response = await fetch(`${BACKEND_URL}/auth/me`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${parsedSession.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            // Token is valid, restore the session
+            const userData = await response.json();
+            setUser(userData);
+            setSession(parsedSession);
+          } else {
+            // Token is invalid/expired, clear stored data
+            console.log('Stored session is invalid, clearing...');
+            localStorage.removeItem('user');
+            localStorage.removeItem('session');
+          }
+        } catch (error) {
+          // Network error or parsing error, clear stored data
+          console.error('Error validating session:', error);
+          localStorage.removeItem('user');
+          localStorage.removeItem('session');
+        }
+      }
+
+      setIsLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   // Login with email/password
@@ -150,6 +184,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     logout,
     showAuthModal,
     setShowAuthModal,
+    authModalMode,
+    setAuthModalMode,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

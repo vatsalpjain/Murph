@@ -35,7 +35,7 @@ const Navbar: React.FC<NavbarProps> = ({ walletBalance }) => {
         <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <div 
+            <div
               className="text-2xl font-bold text-white tracking-wider cursor-pointer hover:text-emerald-400 transition-colors"
               onClick={() => navigate('/')}
             >
@@ -57,6 +57,14 @@ const Navbar: React.FC<NavbarProps> = ({ walletBalance }) => {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-4 sm:gap-2">
+            {/* Watch Demo Button */}
+            <button
+              onClick={() => navigate('/video-player')}
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-sm font-medium hover:from-purple-400 hover:to-indigo-500 hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300"
+            >
+              Watch Demo
+            </button>
+
             {/* Wallet Balance */}
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800 border border-gray-700">
               <div className="text-sm font-semibold text-white">
@@ -72,7 +80,7 @@ const Navbar: React.FC<NavbarProps> = ({ walletBalance }) => {
 
             {/* Profile */}
             <div className="relative" ref={profileMenuRef}>
-              <button 
+              <button
                 className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
               >

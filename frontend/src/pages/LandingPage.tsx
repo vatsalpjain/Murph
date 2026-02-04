@@ -81,7 +81,7 @@ const courseShowcase = [
 
 const LandingPage = () => {
     const navigate = useNavigate();
-    const { isAuthenticated, user, setShowAuthModal, logout } = useAuth();
+    const { isAuthenticated, user, setShowAuthModal, setAuthModalMode, logout } = useAuth();
     const blobsRef = useRef<HTMLDivElement[]>([]);
     const [scrolled, setScrolled] = useState(false);
     const [slideIndex, setSlideIndex] = useState<Record<number, number>>({});
@@ -173,23 +173,16 @@ const LandingPage = () => {
                 <nav className="fixed top-0 left-0 right-0 z-[1000] px-8 md:px-12 py-5 flex items-center justify-between bg-black border-b border-white/10">
                     <div className="flex items-center gap-3">
                         <div
-                            className={`transition-all duration-500 ease-out ${
-                                scrolled ? 'scale-100 opacity-100' : 'scale-75 opacity-0 -translate-y-2'
-                            }`}
+                            className={`transition-all duration-500 ease-out ${scrolled ? 'scale-100 opacity-100' : 'scale-75 opacity-0 -translate-y-2'
+                                }`}
                         >
                             <span className="font-bebas text-3xl tracking-[0.3em] cursor-pointer" onClick={() => navigate('/')}>MURPH</span>
                         </div>
                     </div>
                     <div className="flex gap-4 items-center">
-                        <button 
-                            onClick={() => navigate('/video-player')}
-                            className="font-sans text-sm md:text-base font-medium px-6 md:px-10 py-3 md:py-4 rounded-xl cursor-pointer transition-all duration-300 ease-out bg-transparent border border-white/30 text-white hover:border-purple-400 hover:text-purple-400 hover:shadow-[0_0_20px_rgba(180,160,220,0.4),0_0_40px_rgba(180,160,220,0.2),inset_0_0_20px_rgba(180,160,220,0.05)] hover:-translate-y-0.5">
-                            Watch Demo
-                        </button>
-                        
                         {isAuthenticated ? (
                             <>
-                                <button 
+                                <button
                                     onClick={() => navigate('/dashboard')}
                                     className="font-sans text-sm md:text-base font-medium px-6 md:px-10 py-3 md:py-4 rounded-xl cursor-pointer transition-all duration-300 ease-out bg-transparent border border-white/30 text-white hover:border-teal-400 hover:text-teal-400 hover:shadow-[0_0_20px_rgba(0,200,180,0.4),0_0_40px_rgba(0,200,180,0.2),inset_0_0_20px_rgba(0,200,180,0.05)] hover:-translate-y-0.5">
                                     Dashboard
@@ -209,12 +202,12 @@ const LandingPage = () => {
                         ) : (
                             <>
                                 <button
-                                    onClick={() => setShowAuthModal(true)}
+                                    onClick={() => { setAuthModalMode('login'); setShowAuthModal(true); }}
                                     className="font-sans text-sm md:text-base font-medium px-6 md:px-10 py-3 md:py-4 rounded-xl cursor-pointer transition-all duration-300 ease-out bg-transparent border border-white/30 text-white hover:border-teal-400 hover:text-teal-400 hover:shadow-[0_0_20px_rgba(0,200,180,0.4),0_0_40px_rgba(0,200,180,0.2),inset_0_0_20px_rgba(0,200,180,0.05)] hover:-translate-y-0.5">
                                     Log In
                                 </button>
-                                <button 
-                                    onClick={() => setShowAuthModal(true)}
+                                <button
+                                    onClick={() => { setAuthModalMode('signup'); setShowAuthModal(true); }}
                                     className="font-sans text-sm md:text-base font-medium px-6 md:px-10 py-3 md:py-4 rounded-xl cursor-pointer transition-all duration-300 ease-out bg-gradient-to-br from-teal-500 to-blue-600 border-transparent text-white hover:from-teal-400 hover:to-blue-500 hover:shadow-[0_0_30px_rgba(0,200,180,0.6),0_0_60px_rgba(0,180,160,0.4),0_0_90px_rgba(0,150,200,0.2)] hover:-translate-y-0.5">
                                     Join for Free
                                 </button>
@@ -261,9 +254,8 @@ const LandingPage = () => {
                 {/* Hero Section */}
                 <main className="relative z-10 h-screen flex flex-col justify-center items-center text-center px-6">
                     <h1
-                        className={`font-bebas text-[clamp(140px,26vw,360px)] font-normal tracking-wider select-none animate-logo transition-transform duration-700 ease-out ${
-                            scrolled ? 'scale-75 opacity-70' : 'scale-100'
-                        }`}
+                        className={`font-bebas text-[clamp(140px,26vw,360px)] font-normal tracking-wider select-none animate-logo transition-transform duration-700 ease-out ${scrolled ? 'scale-75 opacity-70' : 'scale-100'
+                            }`}
                         style={{
                             textShadow: '0 0 40px rgba(255,255,255,0.1), 0 0 80px rgba(0,150,180,0.15)',
                         }}
@@ -329,9 +321,8 @@ const LandingPage = () => {
                                             {course.images.map((_, index) => (
                                                 <span
                                                     key={index}
-                                                    className={`h-2 w-2 rounded-full transition ${
-                                                        index === activeIndex ? 'bg-white' : 'bg-white/40'
-                                                    }`}
+                                                    className={`h-2 w-2 rounded-full transition ${index === activeIndex ? 'bg-white' : 'bg-white/40'
+                                                        }`}
                                                 />
                                             ))}
                                         </div>
