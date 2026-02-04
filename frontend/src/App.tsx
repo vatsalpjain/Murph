@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import AccountDashboard from './pages/AccountDashboard';
 import VideoPlayer from './pages/VideoPlayer';
+import PaymentDashboard from './pages/PaymentDashboard';
 import './App.css';
 
 /**
@@ -23,7 +24,7 @@ function App() {
       <AuthProvider>
         {/* Auth modal - shown when user clicks login/signup */}
         <AuthModal />
-        
+
         <Routes>
           {/* Landing page - only for non-authenticated users */}
           <Route path="/landing" element={
@@ -31,27 +32,30 @@ function App() {
               <LandingPage />
             </PublicRoute>
           } />
-          
+
           {/* Home page - requires authentication */}
           <Route path="/" element={
             <ProtectedRoute>
               <HomePage />
             </ProtectedRoute>
           } />
-          
+
           {/* Dashboard - requires authentication */}
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <AccountDashboard />
             </ProtectedRoute>
           } />
-          
+
           {/* Video player - requires authentication */}
           <Route path="/video-player" element={
             <ProtectedRoute>
               <VideoPlayer />
             </ProtectedRoute>
           } />
+
+          {/* Payment Dashboard - public for demo */}
+          <Route path="/payment" element={<PaymentDashboard />} />
 
           {/* Catch-all: redirect invalid URLs to home */}
           <Route path="*" element={<Navigate to="/" replace />} />

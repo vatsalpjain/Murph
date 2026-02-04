@@ -76,10 +76,11 @@ const domainColors: Record<string, string> = {
 
 // ==================== COMPONENTS ====================
 
-function DashboardHeader({ navigate, user, logout }: { 
+function DashboardHeader({ navigate, user, logout, walletBalance }: {
   navigate: (path: string) => void;
   user: any;
   logout: () => void;
+  walletBalance: number;
 }) {
   return (
     <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
@@ -107,11 +108,14 @@ function DashboardHeader({ navigate, user, logout }: {
             </div>
             <div>
               <p className="text-sm text-slate-400">Account Balance</p>
-              <p className="text-xl font-bold text-white">$2,450</p>
+              <p className="text-xl font-bold text-white">₹{walletBalance.toFixed(2)}</p>
             </div>
           </div>
           <div className="flex gap-2 ml-4">
-            <button className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors">
+            <button
+              onClick={() => navigate('/payment')}
+              className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+            >
               <Plus className="h-4 w-4" />
               Add Money
             </button>
@@ -121,7 +125,7 @@ function DashboardHeader({ navigate, user, logout }: {
             </button>
           </div>
         </div>
-        
+
         <button
           onClick={logout}
           className="flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-400 rounded-lg font-medium transition-colors"
@@ -172,16 +176,16 @@ function StatsCards({ stats, loading }: { stats: StatItem[], loading: boolean })
   );
 }
 
-function StreakCalendar({ 
-  calendarDays, 
-  currentStreak, 
-  longestStreak, 
-  loading 
-}: { 
-  calendarDays: CalendarDay[], 
-  currentStreak: number, 
+function StreakCalendar({
+  calendarDays,
+  currentStreak,
+  longestStreak,
+  loading
+}: {
+  calendarDays: CalendarDay[],
+  currentStreak: number,
   longestStreak: number,
-  loading: boolean 
+  loading: boolean
 }) {
   if (loading) {
     return (
@@ -223,11 +227,10 @@ function StreakCalendar({
           {calendarDays.map((dayData) => (
             <div
               key={dayData.date}
-              className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
-                dayData.watched
-                  ? "bg-green-500 text-white"
-                  : "bg-slate-700 text-slate-400 hover:bg-slate-600"
-              }`}
+              className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${dayData.watched
+                ? "bg-green-500 text-white"
+                : "bg-slate-700 text-slate-400 hover:bg-slate-600"
+                }`}
             >
               {dayData.day}
             </div>
@@ -248,14 +251,14 @@ function StreakCalendar({
   );
 }
 
-function DailyAnalytics({ 
-  weeklyData, 
-  domains, 
-  loading 
-}: { 
-  weeklyData: WeeklyDataPoint[], 
+function DailyAnalytics({
+  weeklyData,
+  domains,
+  loading
+}: {
+  weeklyData: WeeklyDataPoint[],
   domains: DomainStat[],
-  loading: boolean 
+  loading: boolean
 }) {
   if (loading) {
     return (
@@ -314,12 +317,12 @@ function DailyAnalytics({
   );
 }
 
-function WatchHistorySection({ 
-  watchHistory, 
-  loading 
-}: { 
+function WatchHistorySection({
+  watchHistory,
+  loading
+}: {
   watchHistory: WatchHistoryItem[],
-  loading: boolean 
+  loading: boolean
 }) {
   if (loading) {
     return (
@@ -377,9 +380,8 @@ function WatchHistorySection({
                   {/* Progress bar */}
                   <div className="mt-3 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all ${
-                        video.progress === 100 ? "bg-green-500" : "bg-green-500/70"
-                      }`}
+                      className={`h-full rounded-full transition-all ${video.progress === 100 ? "bg-green-500" : "bg-green-500/70"
+                        }`}
                       style={{ width: `${video.progress}%` }}
                     />
                   </div>
@@ -404,6 +406,7 @@ const AccountDashboard = () => {
 
   // State for all dashboard data
   const [stats, setStats] = useState<StatItem[]>([]);
+  const [walletBalance, setWalletBalance] = useState<number>(100);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [longestStreak, setLongestStreak] = useState(0);
@@ -444,9 +447,20 @@ const AccountDashboard = () => {
           `${BACKEND_URL}/api/stats/user-analytics/${user.id}`,
           { headers }
         );
-        
+
         if (!analyticsRes.ok) throw new Error('Failed to fetch analytics');
         const analyticsData = await analyticsRes.json();
+
+        // Fetch wallet balance
+        try {
+          const balanceRes = await fetch(`${BACKEND_URL}/api/wallet/balance`, { headers });
+          if (balanceRes.ok) {
+            const balanceData = await balanceRes.json();
+            setWalletBalance(balanceData.balance);
+          }
+        } catch (err) {
+          console.error('Failed to fetch wallet balance:', err);
+        }
 
         // Build stats array from analytics data
         const fetchedStats: StatItem[] = [
@@ -490,10 +504,10 @@ const AccountDashboard = () => {
           `${BACKEND_URL}/api/stats/watch-calendar/${user.id}?days=28`,
           { headers }
         );
-        
+
         if (!calendarRes.ok) throw new Error('Failed to fetch calendar');
         const calendarData = await calendarRes.json();
-        
+
         setCalendarDays(calendarData.calendar_days);
         setCurrentStreak(calendarData.current_streak);
         setLongestStreak(calendarData.longest_streak);
@@ -503,10 +517,10 @@ const AccountDashboard = () => {
           `${BACKEND_URL}/api/stats/domain-analytics/${user.id}`,
           { headers }
         );
-        
+
         if (!domainRes.ok) throw new Error('Failed to fetch domain analytics');
         const domainData = await domainRes.json();
-        
+
         setWeeklyData(domainData.weekly_data);
         setDomains(domainData.domains);
 
@@ -515,10 +529,10 @@ const AccountDashboard = () => {
           `${BACKEND_URL}/api/sessions/user/${user.id}?limit=10`,
           { headers }
         );
-        
+
         if (!historyRes.ok) throw new Error('Failed to fetch session history');
         const historyData = await historyRes.json();
-        
+
         setWatchHistory(historyData.sessions);
 
       } catch (err) {
@@ -537,7 +551,7 @@ const AccountDashboard = () => {
     return (
       <main className="min-h-screen bg-slate-900">
         <div className="container mx-auto px-4 py-8 max-w-7xl">
-          <DashboardHeader navigate={navigate} user={user} logout={logout} />
+          <DashboardHeader navigate={navigate} user={user} logout={logout} walletBalance={walletBalance} />
           <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
             <p className="text-red-400 text-lg">{error}</p>
             <button
@@ -555,16 +569,16 @@ const AccountDashboard = () => {
   return (
     <main className="min-h-screen bg-slate-900">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <DashboardHeader navigate={navigate} user={user} logout={logout} />
+        <DashboardHeader navigate={navigate} user={user} logout={logout} walletBalance={walletBalance} />
         <StatsCards stats={stats} loading={loading} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <StreakCalendar 
+          <StreakCalendar
             calendarDays={calendarDays}
             currentStreak={currentStreak}
             longestStreak={longestStreak}
             loading={loading}
           />
-          <DailyAnalytics 
+          <DailyAnalytics
             weeklyData={weeklyData}
             domains={domains}
             loading={loading}

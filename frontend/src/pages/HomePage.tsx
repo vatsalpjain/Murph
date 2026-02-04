@@ -161,9 +161,26 @@ const mockInstructors = [
 ];
 
 const HomePage: React.FC = () => {
-  const [walletBalance] = useState<number>(125.50);
+  const [walletBalance, setWalletBalance] = useState<number>(100); // Default ₹100
   const [chatOpen, setChatOpen] = useState(false);
   const [shorts, setShorts] = useState<Short[]>([]);
+
+  // Fetch wallet balance from API
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/api/wallet/balance-public');
+        if (res.ok) {
+          const data = await res.json();
+          setWalletBalance(data.balance);
+        }
+      } catch (error) {
+        console.error('Failed to fetch balance:', error);
+        // Keep default ₹100 for new users
+      }
+    };
+    fetchBalance();
+  }, []);
 
   // Load course shorts metadata
   useEffect(() => {

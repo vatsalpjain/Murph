@@ -25,7 +25,7 @@ app = FastAPI(title="Murph Learning Platform API", version="1.0.0")
 # CORS middleware for frontend communication
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # React Vite default port
+    allow_origins=["*"],  # Allow all origins for Finternet demo
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -544,6 +544,158 @@ async def get_user_session_history(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# ============================================================================
+# FINTERNET PAYMENT GATEWAY ENDPOINTS
+# ============================================================================
+
+from eth_account import Account
+from pydantic import BaseModel
+import time
+
+# Initialize Finternet Agent Wallet
+finternet_agent = Account.create()
+print(f"\n🚀 Finternet Agent Wallet: {finternet_agent.address}")
+print(f"-------------------------------------------\n")
+
+# In-memory storage for payment intents (demo - for blockchain simulation)
+finternet_payments = {}
+
+# Default initial balance for new users (₹100)
+INITIAL_BALANCE_RUPEES = 100.0
+
+class FinternetPaymentRequest(BaseModel):
+    amount: float
+    currency: str = "INR"
+    method: str
+    payment_details: dict
+    user_id: Optional[str] = None
+
+
+@app.get("/api/wallet/balance")
+async def get_finternet_wallet_balance(
+    user_id: Optional[str] = None,
+    authenticated_user_id: str = Depends(get_current_user_id)
+):
+    """Get wallet balance from Supabase database"""
+    target_user = user_id or authenticated_user_id
+    try:
+        balance = await WalletService.get_balance(target_user)
+        return {
+            "balance": balance,
+            "currency": "INR",
+            "user_id": target_user
+        }
+    except Exception as e:
+        # Return 0 balance if user has no transactions yet (new user gets ₹100)
+        return {
+            "balance": INITIAL_BALANCE_RUPEES,
+            "currency": "INR",
+            "user_id": target_user
+        }
+
+
+@app.get("/api/wallet/balance-public")
+async def get_public_wallet_balance():
+    """Public endpoint for demo - returns default balance"""
+    return {
+        "balance": INITIAL_BALANCE_RUPEES,
+        "currency": "INR"
+    }
+
+
+@app.post("/api/wallet/deposit")
+async def deposit_to_wallet(
+    amount: float,
+    user_id: Optional[str] = None,
+    authenticated_user_id: str = Depends(get_current_user_id)
+):
+    """Deposit to wallet using Supabase database"""
+    target_user = user_id or authenticated_user_id
+    try:
+        result = await WalletService.deposit(target_user, amount)
+        return {
+            "success": True,
+            "new_balance": result["new_balance"],
+            "deposited": amount,
+            "payment_id": result["payment_id"],
+            "currency": "INR"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/create-payment")
+async def create_finternet_payment(req: FinternetPaymentRequest):
+    """Create Finternet payment intent - NO balance validation"""
+    intent_id = f"int_{int(time.time())}"
+    
+    finternet_payments[intent_id] = {
+        "status": "INITIATED",
+        "amount": req.amount,
+        "currency": req.currency or "INR",
+        "method": req.method,
+        "payment_details": req.payment_details,
+        "user_id": req.user_id,
+        "confirmations": 0
+    }
+    
+    return {
+        "intentId": intent_id,
+        "paymentUrl": f"https://docs.fmm.finternetlab.io/pay/{intent_id}",
+        "status": "INITIATED",
+        "amount": req.amount
+    }
+
+
+@app.post("/api/sign-and-confirm/{intent_id}")
+async def sign_and_confirm_payment(intent_id: str):
+    """Sign payment with EIP-712 and submit to blockchain (simulated)"""
+    if intent_id not in finternet_payments:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    
+    payment = finternet_payments[intent_id]
+    payment["status"] = "PROCESSING"
+    
+    return {
+        "status": "PROCESSING",
+        "message": "Signature verified. Transaction submitted to blockchain.",
+        "agent": finternet_agent.address
+    }
+
+
+@app.get("/api/status/{intent_id}")
+async def get_finternet_payment_status(intent_id: str):
+    """Check payment status with blockchain confirmation simulation"""
+    if intent_id not in finternet_payments:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    
+    payment = finternet_payments[intent_id]
+    
+    # Simulate blockchain confirmations
+    if payment["status"] == "PROCESSING":
+        if payment["confirmations"] < 5:
+            payment["confirmations"] += 1
+        else:
+            payment["status"] = "SUCCEEDED"
+            # Deposit to user's Supabase wallet when payment settles
+            if payment.get("user_id"):
+                try:
+                    await WalletService.deposit(payment["user_id"], payment["amount"])
+                except:
+                    pass  # Silently fail if deposit fails
+    
+    if payment["status"] == "SUCCEEDED":
+        payment["status"] = "SETTLED"
+    
+    return {
+        "intentId": intent_id,
+        "status": payment["status"],
+        "confirmations": payment["confirmations"],
+        "is_confirmed": payment["confirmations"] >= 5
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+
