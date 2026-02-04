@@ -1,5 +1,5 @@
-import React from 'react';
-import { Bell, Search } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Bell, Search, LogOut, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -9,7 +9,26 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ walletBalance }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    if (showProfileMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showProfileMenu]);
   return (
     <nav className="sticky top-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-700/50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -52,14 +71,45 @@ const Navbar: React.FC<NavbarProps> = ({ walletBalance }) => {
             </button>
 
             {/* Profile */}
-            <button 
-              className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-              onClick={() => navigate('/dashboard')}
-            >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm font-bold">
-                {user?.name?.charAt(0).toUpperCase() || 'A'}
-              </div>
-            </button>
+            <div className="relative" ref={profileMenuRef}>
+              <button 
+                className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm font-bold">
+                  {user?.name?.charAt(0).toUpperCase() || 'A'}
+                </div>
+              </button>
+
+              {/* Profile Dropdown Menu */}
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50">
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        navigate('/dashboard');
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-2 transition-colors"
+                    >
+                      <User className="w-4 h-4" />
+                      View Dashboard
+                    </button>
+                    <div className="border-t border-gray-700"></div>
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        logout();
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 flex items-center gap-2 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Mobile Search Toggle */}
             <button className="md:hidden p-2 hover:bg-gray-800 rounded-lg transition-colors">

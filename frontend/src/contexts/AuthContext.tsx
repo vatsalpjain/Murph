@@ -136,8 +136,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('user');
     localStorage.removeItem('session');
 
-    // Navigate to home
-    navigate('/');
+    // Navigate to landing page
+    navigate('/landing');
   };
 
   const value = {
