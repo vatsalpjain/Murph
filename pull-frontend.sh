@@ -14,9 +14,12 @@ NC='\033[0m' # No Color
 REPO_URL="https://github.com/vatsalpjain/Murph.git"
 TARGET_DIR="${1:-murph-frontend}"
 
-# Validate target directory name to prevent path traversal
-if [[ "$TARGET_DIR" == *".."* ]] || [[ "$TARGET_DIR" == /* ]]; then
-    echo -e "${RED}Error: Invalid target directory. Path must be relative and cannot contain '..'${NC}"
+# Validate target directory name to prevent path traversal and other security issues
+# Only allow alphanumeric, dash, underscore, and single forward slashes for subdirectories
+if [[ ! "$TARGET_DIR" =~ ^[a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*$ ]]; then
+    echo -e "${RED}Error: Invalid target directory name.${NC}"
+    echo -e "${YELLOW}Directory name must contain only letters, numbers, dashes, and underscores.${NC}"
+    echo -e "${YELLOW}You can use forward slashes for subdirectories (e.g., 'projects/murph-frontend').${NC}"
     exit 1
 fi
 
