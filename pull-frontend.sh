@@ -8,10 +8,24 @@ set -e
 # Colors for output
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 REPO_URL="https://github.com/vatsalpjain/Murph.git"
 TARGET_DIR="${1:-murph-frontend}"
+
+# Validate target directory name to prevent path traversal
+if [[ "$TARGET_DIR" == *".."* ]] || [[ "$TARGET_DIR" == /* ]]; then
+    echo -e "${RED}Error: Invalid target directory. Path must be relative and cannot contain '..'${NC}"
+    exit 1
+fi
+
+# Check if target directory already exists
+if [ -d "$TARGET_DIR" ]; then
+    echo -e "${RED}Error: Directory '$TARGET_DIR' already exists.${NC}"
+    echo -e "${YELLOW}Please choose a different directory name or remove the existing one.${NC}"
+    exit 1
+fi
 
 echo -e "${YELLOW}Cloning frontend folder from Murph repository...${NC}"
 
