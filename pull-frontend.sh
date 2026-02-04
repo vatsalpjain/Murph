@@ -25,6 +25,14 @@ if [[ ! "$TARGET_DIR" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_-]*(/[a-zA-Z0-9_][a-zA-Z0-9_-]*
     exit 1
 fi
 
+# Prevent excessive directory nesting (max 3 levels)
+DEPTH=$(echo "$TARGET_DIR" | tr -cd '/' | wc -c)
+if [ "$DEPTH" -gt 2 ]; then
+    echo -e "${RED}Error: Directory path is too deeply nested.${NC}"
+    echo -e "${YELLOW}Maximum of 3 directory levels allowed (e.g., 'level1/level2/level3').${NC}"
+    exit 1
+fi
+
 # Check if target directory already exists
 if [ -d "$TARGET_DIR" ]; then
     echo -e "${RED}Error: Directory '$TARGET_DIR' already exists.${NC}"
@@ -35,9 +43,16 @@ fi
 echo -e "${YELLOW}Cloning frontend folder from Murph repository...${NC}"
 
 # Clone with no checkout, explicitly from main branch
-git clone --no-checkout --branch main "$REPO_URL" "$TARGET_DIR"
+if ! git clone --no-checkout --branch main "$REPO_URL" "$TARGET_DIR"; then
+    echo -e "${RED}Error: Failed to clone repository.${NC}"
+    echo -e "${YELLOW}Please check your network connection and try again.${NC}"
+    exit 1
+fi
 
-cd "$TARGET_DIR"
+cd "$TARGET_DIR" || {
+    echo -e "${RED}Error: Failed to change to target directory.${NC}"
+    exit 1
+}
 
 # Enable sparse checkout
 echo -e "${YELLOW}Configuring sparse checkout...${NC}"
