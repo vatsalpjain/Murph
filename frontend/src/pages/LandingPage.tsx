@@ -38,10 +38,11 @@ const customStyles = `
   .font-bebas { font-family: 'Bebas Neue', sans-serif; }
 `;
 
+// Landing page component with animated background and hero section
 const LandingPage = () => {
     const blobsRef = useRef<HTMLDivElement[]>([]);
 
-    // Mouse parallax effect
+    // Mouse parallax effect - creates interactive movement based on cursor position
     useEffect(() => {
         let mouseX = 0;
         let mouseY = 0;
@@ -50,14 +51,17 @@ const LandingPage = () => {
         let animationFrameId: number;
 
         const handleMouseMove = (e: MouseEvent) => {
+            // Normalize mouse position to -1 to 1 range
             mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
             mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
         };
 
         const animate = () => {
+            // Smooth interpolation for fluid movement
             currentX += (mouseX - currentX) * 0.05;
             currentY += (mouseY - currentY) * 0.05;
 
+            // Apply parallax effect to each blob with varying depth
             blobsRef.current.forEach((blob, index) => {
                 if (blob) {
                     const depth = (index + 1) * 15;
@@ -105,31 +109,37 @@ const LandingPage = () => {
 
                 {/* Animated Background Blobs */}
                 <div className="fixed inset-0 z-[1] overflow-hidden pointer-events-none">
+                    {/* Primary blue blob - top left */}
                     <div
                         ref={setBlobRef(0)}
                         className="absolute w-[700px] h-[700px] rounded-full blur-[100px] opacity-80 mix-blend-screen animate-float1"
                         style={{ background: 'radial-gradient(circle, rgba(0,120,200,0.9) 0%, rgba(0,80,150,0.5) 40%, transparent 70%)', top: '15%', left: '5%' }}
                     />
+                    {/* Teal blob - right side */}
                     <div
                         ref={setBlobRef(1)}
                         className="absolute w-[600px] h-[600px] rounded-full blur-[100px] opacity-80 mix-blend-screen animate-float2"
                         style={{ background: 'radial-gradient(circle, rgba(0,200,170,0.85) 0%, rgba(0,130,120,0.4) 40%, transparent 70%)', top: '40%', right: '0%' }}
                     />
+                    {/* Blue blob - bottom center */}
                     <div
                         ref={setBlobRef(2)}
                         className="absolute w-[550px] h-[550px] rounded-full blur-[100px] opacity-80 mix-blend-screen animate-float3"
                         style={{ background: 'radial-gradient(circle, rgba(40,100,180,0.75) 0%, rgba(20,60,130,0.4) 40%, transparent 70%)', bottom: '5%', left: '25%' }}
                     />
+                    {/* Teal accent blob - top right */}
                     <div
                         ref={setBlobRef(3)}
                         className="absolute w-[450px] h-[450px] rounded-full blur-[100px] opacity-70 mix-blend-screen animate-float1"
                         style={{ background: 'radial-gradient(circle, rgba(0,170,150,0.7) 0%, rgba(0,100,100,0.3) 40%, transparent 70%)', top: '5%', right: '20%', animationDelay: '2s' }}
                     />
+                    {/* Purple accent blob - right center */}
                     <div
                         ref={setBlobRef(4)}
                         className="absolute w-[400px] h-[400px] rounded-full blur-[100px] opacity-60 mix-blend-screen animate-float2"
                         style={{ background: 'radial-gradient(circle, rgba(80,60,180,0.6) 0%, rgba(40,30,120,0.3) 40%, transparent 70%)', bottom: '30%', right: '35%', animationDelay: '1s' }}
                     />
+                    {/* Cyan accent blob - left side */}
                     <div
                         ref={setBlobRef(5)}
                         className="absolute w-[500px] h-[500px] rounded-full blur-[100px] opacity-65 mix-blend-screen animate-float3"
