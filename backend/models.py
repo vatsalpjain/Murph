@@ -75,3 +75,48 @@ class SessionStatusResponse(BaseModel):
     end_time: Optional[datetime]
     duration_seconds: int
     payment_tx_id: Optional[str]
+
+
+# Wallet Models
+class WalletBalanceResponse(BaseModel):
+    user_id: str
+    balance: float
+
+
+class WalletDepositRequest(BaseModel):
+    user_id: str
+    amount: float = Field(gt=0, description="Amount to deposit")
+
+
+class WalletDepositResponse(BaseModel):
+    payment_id: str
+    amount: float
+    new_balance: float
+    gateway_tx_id: str
+    timestamp: datetime
+
+
+# Video Session Models
+class VideoSessionStartRequest(BaseModel):
+    user_id: str
+    video_id: Optional[str] = "default"
+
+
+class VideoSessionStartResponse(BaseModel):
+    session_id: str
+    locked_amount: float
+    start_time: datetime
+    rate_per_second: float
+
+
+class VideoSessionEndRequest(BaseModel):
+    user_id: str
+
+
+class VideoSessionEndResponse(BaseModel):
+    session_id: str
+    duration_seconds: int
+    amount_charged: float
+    refund: float
+    final_balance: float
+    ended_at: datetime

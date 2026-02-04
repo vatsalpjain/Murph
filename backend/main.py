@@ -2,9 +2,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from models import (
     SessionCreateRequest, SessionCreateResponse, SessionStartRequest,
-    SessionCompleteRequest, PaymentResponse, SessionStatusResponse
+    SessionCompleteRequest, PaymentResponse, SessionStatusResponse,
+    WalletBalanceResponse, WalletDepositRequest, WalletDepositResponse,
+    VideoSessionStartRequest, VideoSessionStartResponse,
+    VideoSessionEndRequest, VideoSessionEndResponse
 )
 from payment_service import SessionService, PaymentService
+from wallet_service import WalletService, VideoSessionService
 
 app = FastAPI(title="Murph Learning Platform API", version="1.0.0")
 
@@ -158,6 +162,110 @@ async def get_payment_history(user_id: str):
     try:
         payments = await PaymentService.get_payment_history(user_id)
         return {"payments": payments}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================================
+# WALLET ENDPOINTS (For Video Player)
+# ============================================================================
+
+@app.get("/wallet/{user_id}", response_model=WalletBalanceResponse)
+async def get_wallet_balance(user_id: str):
+    """
+    Get user's current wallet balance
+    Calculates from deposit/charge/refund history
+    """
+    try:
+        balance = await WalletService.get_balance(user_id)
+        return WalletBalanceResponse(user_id=user_id, balance=balance)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/wallet/deposit", response_model=WalletDepositResponse)
+async def deposit_to_wallet(request: WalletDepositRequest):
+    """
+    Deposit funds to user's wallet
+    Creates a payment record of type 'deposit'
+    """
+    try:
+        result = await WalletService.deposit(request.user_id, request.amount)
+        
+        return WalletDepositResponse(
+            payment_id=result["payment_id"],
+            amount=result["amount"],
+            new_balance=result["new_balance"],
+            gateway_tx_id=result["gateway_tx_id"],
+            timestamp=result["timestamp"]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================================
+# VIDEO SESSION ENDPOINTS (For Video Player)
+# ============================================================================
+
+@app.post("/session/start", response_model=VideoSessionStartResponse)
+async def start_video_session(request: VideoSessionStartRequest):
+    """
+    Start a new video streaming session
+    Locks ₹30 from user's wallet
+    """
+    try:
+        result = await VideoSessionService.start_session(
+            user_id=request.user_id,
+            video_id=request.video_id or "default"
+        )
+        
+        return VideoSessionStartResponse(
+            session_id=result["session_id"],
+            locked_amount=result["locked_amount"],
+            start_time=result["start_time"],
+            rate_per_second=result["rate_per_second"]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/session/end", response_model=VideoSessionEndResponse)
+async def end_video_session(request: VideoSessionEndRequest):
+    """
+    End active video session
+    Calculates charge based on duration, refunds remainder
+    """
+    try:
+        result = await VideoSessionService.end_session(request.user_id)
+        
+        return VideoSessionEndResponse(
+            session_id=result["session_id"],
+            duration_seconds=result["duration_seconds"],
+            amount_charged=result["amount_charged"],
+            refund=result["refund"],
+            final_balance=result["final_balance"],
+            ended_at=result["ended_at"]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/session/active/{user_id}")
+async def get_active_video_session(user_id: str):
+    """
+    Get user's active video session info
+    Returns current duration and cost
+    """
+    try:
+        session = await VideoSessionService.get_active_session(user_id)
+        
+        if not session:
+            return {"active": False, "message": "No active session"}
+        
+        return {
+            "active": True,
+            **session
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
