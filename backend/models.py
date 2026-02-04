@@ -173,3 +173,66 @@ class VideoSessionEndResponse(BaseModel):
     refund: float
     final_balance: float
     ended_at: datetime
+
+
+# ============================================================================
+# ANALYTICS MODELS
+# ============================================================================
+
+class UserAnalyticsResponse(BaseModel):
+    """User statistics overview"""
+    total_hours_watched: float
+    total_videos_watched: int
+    current_streak: int
+    longest_streak: int
+    active_domains: int
+
+
+class CalendarDay(BaseModel):
+    """Single day in watch calendar"""
+    day: int
+    date: str
+    watched: bool
+
+
+class WatchCalendarResponse(BaseModel):
+    """Watch calendar with streak info"""
+    calendar_days: list[CalendarDay]
+    current_streak: int
+    longest_streak: int
+
+
+class DomainStats(BaseModel):
+    """Statistics for a single domain/category"""
+    name: str
+    hours: float
+    color: str
+
+
+class WeeklyDataPoint(BaseModel):
+    """Single day's watch time"""
+    day: str
+    hours: float
+
+
+class DomainAnalyticsResponse(BaseModel):
+    """Domain-wise analytics with weekly breakdown"""
+    domains: list[DomainStats]
+    weekly_data: list[WeeklyDataPoint]
+
+
+class SessionHistoryItem(BaseModel):
+    """Single session in user's history"""
+    id: str
+    title: str
+    domain: str
+    duration: str
+    watched: str
+    date: str
+    progress: int
+    status: str
+
+
+class SessionHistoryResponse(BaseModel):
+    """List of user's recent sessions"""
+    sessions: list[SessionHistoryItem]

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from 'react';
 import {
   Wallet,
   Plus,
@@ -16,148 +17,62 @@ import {
   LogOut,
 } from "lucide-react";
 
-// ==================== DATA ====================
+// ==================== TYPES ====================
 
-const stats = [
-  {
-    title: "Watch Streak",
-    value: "12",
-    unit: "days",
-    icon: Flame,
-    color: "text-orange-500",
-    bgColor: "bg-orange-500/10",
-    streak: [true, true, false, true, true, true, true],
-  },
-  {
-    title: "Total Hours Watched",
-    value: "48.5",
-    unit: "hours",
-    icon: Clock,
-    color: "text-green-500",
-    bgColor: "bg-green-500/10",
-  },
-  {
-    title: "Videos Watched",
-    value: "127",
-    unit: "videos",
-    icon: PlayCircle,
-    color: "text-blue-500",
-    bgColor: "bg-blue-500/10",
-  },
-  {
-    title: "Active Domains",
-    value: "4",
-    unit: "domains",
-    icon: Layers,
-    color: "text-purple-500",
-    bgColor: "bg-purple-500/10",
-  },
-];
+interface StatItem {
+  title: string;
+  value: string;
+  unit: string;
+  icon: any;
+  color: string;
+  bgColor: string;
+}
 
-const calendarDays = [
-  { day: 1, watched: true },
-  { day: 2, watched: true },
-  { day: 3, watched: false },
-  { day: 4, watched: true },
-  { day: 5, watched: true },
-  { day: 6, watched: true },
-  { day: 7, watched: true },
-  { day: 8, watched: true },
-  { day: 9, watched: false },
-  { day: 10, watched: true },
-  { day: 11, watched: true },
-  { day: 12, watched: true },
-  { day: 13, watched: true },
-  { day: 14, watched: true },
-  { day: 15, watched: true },
-  { day: 16, watched: false },
-  { day: 17, watched: true },
-  { day: 18, watched: true },
-  { day: 19, watched: true },
-  { day: 20, watched: true },
-  { day: 21, watched: true },
-  { day: 22, watched: true },
-  { day: 23, watched: false },
-  { day: 24, watched: true },
-  { day: 25, watched: true },
-  { day: 26, watched: true },
-  { day: 27, watched: true },
-  { day: 28, watched: true },
-];
+interface CalendarDay {
+  day: number;
+  date: string;
+  watched: boolean;
+}
 
-const weeklyData = [
-  { day: "Mon", hours: 2.5 },
-  { day: "Tue", hours: 3.2 },
-  { day: "Wed", hours: 1.8 },
-  { day: "Thu", hours: 4.0 },
-  { day: "Fri", hours: 2.8 },
-  { day: "Sat", hours: 5.2 },
-  { day: "Sun", hours: 3.5 },
-];
+interface WeeklyDataPoint {
+  day: string;
+  hours: number;
+}
 
-const domains = [
-  { name: "DSA", color: "bg-green-500", hours: 9.5 },
-  { name: "Web Dev", color: "bg-blue-500", hours: 6.8 },
-  { name: "AI/ML", color: "bg-orange-500", hours: 3.8 },
-  { name: "Core CS", color: "bg-purple-500", hours: 2.9 },
-];
+interface DomainStat {
+  name: string;
+  hours: number;
+  color: string;
+}
 
-const watchHistory = [
-  {
-    id: 1,
-    title: "Binary Search Algorithm - Complete Tutorial",
-    domain: "DSA",
-    duration: "45:32",
-    watched: "42:15",
-    date: "Today",
-    progress: 93,
-  },
-  {
-    id: 2,
-    title: "React Server Components Deep Dive",
-    domain: "Web Dev",
-    duration: "1:12:45",
-    watched: "1:12:45",
-    date: "Today",
-    progress: 100,
-  },
-  {
-    id: 3,
-    title: "Introduction to Neural Networks",
-    domain: "AI/ML",
-    duration: "58:20",
-    watched: "32:10",
-    date: "Yesterday",
-    progress: 55,
-  },
-  {
-    id: 4,
-    title: "Operating Systems - Process Scheduling",
-    domain: "Core CS",
-    duration: "52:15",
-    watched: "52:15",
-    date: "Yesterday",
-    progress: 100,
-  },
-  {
-    id: 5,
-    title: "Dynamic Programming Patterns",
-    domain: "DSA",
-    duration: "1:25:00",
-    watched: "45:30",
-    date: "2 days ago",
-    progress: 53,
-  },
-];
+interface WatchHistoryItem {
+  id: string;
+  title: string;
+  domain: string;
+  duration: string;
+  watched: string;
+  date: string;
+  progress: number;
+  status: string;
+}
+
+// ==================== CONSTANTS ====================
+
+const BACKEND_URL = 'http://localhost:8000';
 
 const domainColors: Record<string, string> = {
   DSA: "bg-green-500/20 text-green-400 border-green-500/30",
+  "Data Structures": "bg-green-500/20 text-green-400 border-green-500/30",
+  "Algorithms": "bg-green-500/20 text-green-400 border-green-500/30",
   "Web Dev": "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  "Web Development": "bg-blue-500/20 text-blue-400 border-blue-500/30",
   "AI/ML": "bg-orange-500/20 text-orange-400 border-orange-500/30",
+  "Machine Learning": "bg-orange-500/20 text-orange-400 border-orange-500/30",
   "Core CS": "bg-purple-500/20 text-purple-400 border-purple-500/30",
+  "Computer Science": "bg-purple-500/20 text-purple-400 border-purple-500/30",
+  "Music": "bg-pink-500/20 text-pink-400 border-pink-500/30",
+  "Fitness": "bg-red-500/20 text-red-400 border-red-500/30",
 };
-
-const maxHours = Math.max(...weeklyData.map((d) => d.hours));
 
 // ==================== COMPONENTS ====================
 
@@ -219,7 +134,19 @@ function DashboardHeader({ navigate, user, logout }: {
   );
 }
 
-function StatsCards() {
+function StatsCards({ stats, loading }: { stats: StatItem[], loading: boolean }) {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-slate-800 border border-slate-700 rounded-xl p-6 animate-pulse">
+            <div className="h-16 bg-slate-700 rounded"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat) => (
@@ -239,29 +166,30 @@ function StatsCards() {
               <stat.icon className={`h-6 w-6 ${stat.color}`} />
             </div>
           </div>
-          {stat.streak && (
-            <div className="flex gap-1 mt-4">
-              {stat.streak.map((day, i) => (
-                <div
-                  key={i}
-                  className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-medium ${
-                    day ? "bg-orange-500 text-white" : "bg-slate-700 text-slate-400"
-                  }`}
-                >
-                  {["M", "T", "W", "T", "F", "S", "S"][i]}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       ))}
     </div>
   );
 }
 
-function StreakCalendar() {
-  const currentStreak = 12;
-  const longestStreak = 15;
+function StreakCalendar({ 
+  calendarDays, 
+  currentStreak, 
+  longestStreak, 
+  loading 
+}: { 
+  calendarDays: CalendarDay[], 
+  currentStreak: number, 
+  longestStreak: number,
+  loading: boolean 
+}) {
+  if (loading) {
+    return (
+      <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 animate-pulse">
+        <div className="h-64 bg-slate-700 rounded"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl">
@@ -292,16 +220,16 @@ function StreakCalendar() {
               {day}
             </div>
           ))}
-          {calendarDays.map(({ day, watched }) => (
+          {calendarDays.map((dayData) => (
             <div
-              key={day}
+              key={dayData.date}
               className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
-                watched
+                dayData.watched
                   ? "bg-green-500 text-white"
                   : "bg-slate-700 text-slate-400 hover:bg-slate-600"
               }`}
             >
-              {day}
+              {dayData.day}
             </div>
           ))}
         </div>
@@ -320,7 +248,25 @@ function StreakCalendar() {
   );
 }
 
-function DailyAnalytics() {
+function DailyAnalytics({ 
+  weeklyData, 
+  domains, 
+  loading 
+}: { 
+  weeklyData: WeeklyDataPoint[], 
+  domains: DomainStat[],
+  loading: boolean 
+}) {
+  if (loading) {
+    return (
+      <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 animate-pulse">
+        <div className="h-64 bg-slate-700 rounded"></div>
+      </div>
+    );
+  }
+
+  const maxHours = Math.max(...weeklyData.map((d) => d.hours), 1);
+
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl">
       <div className="p-6 pb-2">
@@ -368,7 +314,21 @@ function DailyAnalytics() {
   );
 }
 
-function WatchHistorySection() {
+function WatchHistorySection({ 
+  watchHistory, 
+  loading 
+}: { 
+  watchHistory: WatchHistoryItem[],
+  loading: boolean 
+}) {
+  if (loading) {
+    return (
+      <div className="bg-slate-800 border border-slate-700 rounded-xl mt-6 p-6 animate-pulse">
+        <div className="h-48 bg-slate-700 rounded"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl mt-6">
       <div className="p-6 pb-2">
@@ -379,51 +339,57 @@ function WatchHistorySection() {
       </div>
       <div className="p-6 pt-0">
         <div className="space-y-3">
-          {watchHistory.map((video) => (
-            <div
-              key={video.id}
-              className="flex items-center gap-4 p-4 rounded-xl bg-slate-700/30 hover:bg-slate-700/50 transition-colors group cursor-pointer"
-            >
-              {/* Thumbnail placeholder */}
-              <div className="relative w-32 h-20 rounded-lg bg-slate-700 flex items-center justify-center shrink-0 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-blue-500/20" />
-                <Play className="h-8 w-8 text-white/50 group-hover:text-green-500 transition-colors" />
-                <div className="absolute bottom-1 right-1 bg-slate-900/80 text-white text-xs px-1.5 py-0.5 rounded">
-                  {video.duration}
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-white truncate group-hover:text-green-500 transition-colors">
-                  {video.title}
-                </h3>
-                <div className="flex items-center gap-3 mt-2">
-                  <span
-                    className={`text-xs px-2 py-1 rounded border ${domainColors[video.domain]}`}
-                  >
-                    {video.domain}
-                  </span>
-                  <span className="text-xs text-slate-400 flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {video.watched} watched
-                  </span>
-                </div>
-                {/* Progress bar */}
-                <div className="mt-3 h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${
-                      video.progress === 100 ? "bg-green-500" : "bg-green-500/70"
-                    }`}
-                    style={{ width: `${video.progress}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Date */}
-              <div className="text-sm text-slate-400 shrink-0">{video.date}</div>
+          {watchHistory.length === 0 ? (
+            <div className="text-center py-8 text-slate-400">
+              <p>No watch history yet. Start learning to see your progress!</p>
             </div>
-          ))}
+          ) : (
+            watchHistory.map((video) => (
+              <div
+                key={video.id}
+                className="flex items-center gap-4 p-4 rounded-xl bg-slate-700/30 hover:bg-slate-700/50 transition-colors group cursor-pointer"
+              >
+                {/* Thumbnail placeholder */}
+                <div className="relative w-32 h-20 rounded-lg bg-slate-700 flex items-center justify-center shrink-0 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-blue-500/20" />
+                  <Play className="h-8 w-8 text-white/50 group-hover:text-green-500 transition-colors" />
+                  <div className="absolute bottom-1 right-1 bg-slate-900/80 text-white text-xs px-1.5 py-0.5 rounded">
+                    {video.duration}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-white truncate group-hover:text-green-500 transition-colors">
+                    {video.title}
+                  </h3>
+                  <div className="flex items-center gap-3 mt-2">
+                    <span
+                      className={`text-xs px-2 py-1 rounded border ${domainColors[video.domain] || "bg-slate-500/20 text-slate-400 border-slate-500/30"}`}
+                    >
+                      {video.domain}
+                    </span>
+                    <span className="text-xs text-slate-400 flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {video.watched} watched
+                    </span>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="mt-3 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        video.progress === 100 ? "bg-green-500" : "bg-green-500/70"
+                      }`}
+                      style={{ width: `${video.progress}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Date */}
+                <div className="text-sm text-slate-400 shrink-0">{video.date}</div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
@@ -434,7 +400,18 @@ function WatchHistorySection() {
 
 const AccountDashboard = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, session, isAuthenticated, logout } = useAuth();
+
+  // State for all dashboard data
+  const [stats, setStats] = useState<StatItem[]>([]);
+  const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
+  const [weeklyData, setWeeklyData] = useState<WeeklyDataPoint[]>([]);
+  const [domains, setDomains] = useState<DomainStat[]>([]);
+  const [watchHistory, setWatchHistory] = useState<WatchHistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Redirect to home if not authenticated
   if (!isAuthenticated) {
@@ -442,16 +419,152 @@ const AccountDashboard = () => {
     return null;
   }
 
+  // Fetch all dashboard data on mount
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!user || !session) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const headers = {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        };
+
+        // Fetch user analytics (stats)
+        const analyticsRes = await fetch(
+          `${BACKEND_URL}/api/stats/user-analytics/${user.id}`,
+          { headers }
+        );
+        
+        if (!analyticsRes.ok) throw new Error('Failed to fetch analytics');
+        const analyticsData = await analyticsRes.json();
+
+        // Build stats array from analytics data
+        const fetchedStats: StatItem[] = [
+          {
+            title: "Watch Streak",
+            value: analyticsData.current_streak.toString(),
+            unit: "days",
+            icon: Flame,
+            color: "text-orange-500",
+            bgColor: "bg-orange-500/10",
+          },
+          {
+            title: "Total Hours Watched",
+            value: analyticsData.total_hours_watched.toString(),
+            unit: "hours",
+            icon: Clock,
+            color: "text-green-500",
+            bgColor: "bg-green-500/10",
+          },
+          {
+            title: "Videos Watched",
+            value: analyticsData.total_videos_watched.toString(),
+            unit: "videos",
+            icon: PlayCircle,
+            color: "text-blue-500",
+            bgColor: "bg-blue-500/10",
+          },
+          {
+            title: "Active Domains",
+            value: analyticsData.active_domains.toString(),
+            unit: "domains",
+            icon: Layers,
+            color: "text-purple-500",
+            bgColor: "bg-purple-500/10",
+          },
+        ];
+        setStats(fetchedStats);
+
+        // Fetch watch calendar
+        const calendarRes = await fetch(
+          `${BACKEND_URL}/api/stats/watch-calendar/${user.id}?days=28`,
+          { headers }
+        );
+        
+        if (!calendarRes.ok) throw new Error('Failed to fetch calendar');
+        const calendarData = await calendarRes.json();
+        
+        setCalendarDays(calendarData.calendar_days);
+        setCurrentStreak(calendarData.current_streak);
+        setLongestStreak(calendarData.longest_streak);
+
+        // Fetch domain analytics
+        const domainRes = await fetch(
+          `${BACKEND_URL}/api/stats/domain-analytics/${user.id}`,
+          { headers }
+        );
+        
+        if (!domainRes.ok) throw new Error('Failed to fetch domain analytics');
+        const domainData = await domainRes.json();
+        
+        setWeeklyData(domainData.weekly_data);
+        setDomains(domainData.domains);
+
+        // Fetch session history
+        const historyRes = await fetch(
+          `${BACKEND_URL}/api/sessions/user/${user.id}?limit=10`,
+          { headers }
+        );
+        
+        if (!historyRes.ok) throw new Error('Failed to fetch session history');
+        const historyData = await historyRes.json();
+        
+        setWatchHistory(historyData.sessions);
+
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [user, session]);
+
+  // Show error if data fetch failed
+  if (error) {
+    return (
+      <main className="min-h-screen bg-slate-900">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+          <DashboardHeader navigate={navigate} user={user} logout={logout} />
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
+            <p className="text-red-400 text-lg">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-slate-900">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <DashboardHeader navigate={navigate} user={user} logout={logout} />
-        <StatsCards />
+        <StatsCards stats={stats} loading={loading} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          <StreakCalendar />
-          <DailyAnalytics />
+          <StreakCalendar 
+            calendarDays={calendarDays}
+            currentStreak={currentStreak}
+            longestStreak={longestStreak}
+            loading={loading}
+          />
+          <DailyAnalytics 
+            weeklyData={weeklyData}
+            domains={domains}
+            loading={loading}
+          />
         </div>
-        <WatchHistorySection />
+        <WatchHistorySection watchHistory={watchHistory} loading={loading} />
       </div>
     </main>
   );

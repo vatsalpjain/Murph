@@ -10,11 +10,15 @@ from models import (
     SessionCompleteRequest, PaymentResponse, SessionStatusResponse,
     WalletBalanceResponse, WalletDepositRequest, WalletDepositResponse,
     VideoSessionStartRequest, VideoSessionStartResponse,
-    VideoSessionEndRequest, VideoSessionEndResponse
+    VideoSessionEndRequest, VideoSessionEndResponse,
+    # Analytics models
+    UserAnalyticsResponse, WatchCalendarResponse, DomainAnalyticsResponse,
+    SessionHistoryResponse
 )
 from payment_service import SessionService, PaymentService
 from wallet_service import WalletService, VideoSessionService
 from auth_service import AuthService
+from analytics_service import AnalyticsService
 
 app = FastAPI(title="Murph Learning Platform API", version="1.0.0")
 
@@ -447,6 +451,94 @@ async def get_active_video_session(
             "active": True,
             **session
         }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================================
+# ANALYTICS ENDPOINTS (PROTECTED - For Dashboard)
+# ============================================================================
+
+@app.get("/api/stats/user-analytics/{user_id}", response_model=UserAnalyticsResponse)
+async def get_user_analytics(
+    user_id: str,
+    authenticated_user_id: str = Depends(get_current_user_id)
+):
+    """
+    Get comprehensive user analytics
+    Returns total watch time, videos watched, streaks, and active domains
+    PROTECTED: Users can only access their own analytics
+    """
+    # Verify user can only access their own analytics
+    if user_id != authenticated_user_id:
+        raise HTTPException(status_code=403, detail="Cannot access other user's analytics")
+    
+    try:
+        analytics = await AnalyticsService.get_user_analytics(user_id)
+        return UserAnalyticsResponse(**analytics)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/stats/watch-calendar/{user_id}", response_model=WatchCalendarResponse)
+async def get_watch_calendar(
+    user_id: str,
+    days: int = 28,
+    authenticated_user_id: str = Depends(get_current_user_id)
+):
+    """
+    Get watch calendar for last N days with streak info
+    PROTECTED: Users can only access their own calendar
+    """
+    # Verify user can only access their own calendar
+    if user_id != authenticated_user_id:
+        raise HTTPException(status_code=403, detail="Cannot access other user's calendar")
+    
+    try:
+        calendar_data = await AnalyticsService.get_watch_calendar(user_id, days)
+        return WatchCalendarResponse(**calendar_data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/stats/domain-analytics/{user_id}", response_model=DomainAnalyticsResponse)
+async def get_domain_analytics(
+    user_id: str,
+    authenticated_user_id: str = Depends(get_current_user_id)
+):
+    """
+    Get domain/category-wise analytics with weekly breakdown
+    PROTECTED: Users can only access their own domain stats
+    """
+    # Verify user can only access their own domain analytics
+    if user_id != authenticated_user_id:
+        raise HTTPException(status_code=403, detail="Cannot access other user's domain analytics")
+    
+    try:
+        domain_data = await AnalyticsService.get_domain_analytics(user_id)
+        return DomainAnalyticsResponse(**domain_data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/sessions/user/{user_id}", response_model=SessionHistoryResponse)
+async def get_user_session_history(
+    user_id: str,
+    limit: int = 10,
+    authenticated_user_id: str = Depends(get_current_user_id)
+):
+    """
+    Get user's session history with course details
+    Returns recent sessions with progress and payment info
+    PROTECTED: Users can only access their own session history
+    """
+    # Verify user can only access their own session history
+    if user_id != authenticated_user_id:
+        raise HTTPException(status_code=403, detail="Cannot access other user's session history")
+    
+    try:
+        sessions = await AnalyticsService.get_user_sessions(user_id, limit)
+        return SessionHistoryResponse(sessions=sessions)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
