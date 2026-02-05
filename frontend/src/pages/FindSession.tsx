@@ -85,7 +85,7 @@ const FindSession: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Navbar */}
-      <Navbar walletBalance={walletBalance} />
+      <Navbar />
 
       {/* Header Section */}
       <section className="bg-gradient-to-br from-gray-800 via-slate-800 to-gray-900 py-12 px-4 sm:px-6 lg:px-8 border-b border-gray-700">

@@ -153,26 +153,48 @@ class WalletDepositResponse(BaseModel):
 class VideoSessionStartRequest(BaseModel):
     user_id: str
     video_id: Optional[str] = "default"
+    course_id: Optional[str] = None
+    lock_amount: Optional[float] = None  # Frontend can specify lock amount
+    price_per_minute: Optional[float] = None  # Frontend can specify price
 
 
 class VideoSessionStartResponse(BaseModel):
     session_id: str
     locked_amount: float
+    price_per_minute: float
     start_time: datetime
     rate_per_second: float
 
 
 class VideoSessionEndRequest(BaseModel):
     user_id: str
+    session_id: Optional[str] = None
+    duration_seconds: int = 0  # Frontend sends actual watch time
+    price_per_minute: float = 2.0  # Price used for calculation
+    locked_amount: float = 30.0  # Amount that was locked
 
 
 class VideoSessionEndResponse(BaseModel):
     session_id: str
     duration_seconds: int
+    duration_minutes: float
+    price_per_minute: float
     amount_charged: float
+    amount_locked: float
     refund: float
     final_balance: float
     ended_at: datetime
+
+
+# Course Pricing Models
+class CoursePricingResponse(BaseModel):
+    course_id: str
+    title: str
+    rating: float
+    price_per_minute: float
+    total_duration_minutes: int
+    total_video_cost: float
+    lock_amount: float
 
 
 # ============================================================================

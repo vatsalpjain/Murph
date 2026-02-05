@@ -20,6 +20,7 @@ from wallet_service import WalletService, VideoSessionService
 from auth_service import AuthService
 from analytics_service import AnalyticsService
 from teacher_analytics_service import TeacherAnalyticsService
+from ai_search_service import ai_youtube_search, quick_youtube_search
 
 app = FastAPI(title="Murph Learning Platform API", version="1.0.0")
 
@@ -184,6 +185,50 @@ async def root():
 async def health_check():
     """Public health check endpoint"""
     return {"status": "healthy", "version": "1.0.0"}
+
+
+# ============================================================================
+# AI-POWERED YOUTUBE SEARCH ENDPOINTS (PUBLIC)
+# ============================================================================
+
+@app.get("/api/search/youtube")
+async def search_youtube_videos(q: str, max_results: int = 8):
+    """
+    AI-powered YouTube search
+    Uses LLM to optimize query and rank results for educational content
+    PUBLIC: No authentication required
+    
+    Query Parameters:
+    - q: Search query string
+    - max_results: Maximum number of results (default 8)
+    """
+    if not q or len(q.strip()) < 2:
+        raise HTTPException(status_code=400, detail="Search query must be at least 2 characters")
+    
+    try:
+        result = await ai_youtube_search(q.strip(), max_results)
+        return result
+    except Exception as e:
+        print(f"❌ Search error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/search/youtube/quick")
+async def quick_search_youtube(q: str, max_results: int = 5):
+    """
+    Quick YouTube search without AI ranking
+    Faster response for real-time search suggestions
+    PUBLIC: No authentication required
+    """
+    if not q or len(q.strip()) < 2:
+        return {"videos": []}
+    
+    try:
+        videos = await quick_youtube_search(q.strip(), max_results)
+        return {"videos": videos}
+    except Exception as e:
+        print(f"❌ Quick search error: {e}")
+        return {"videos": []}
 
 
 # ============================================================================
@@ -479,6 +524,20 @@ async def deposit_to_wallet(
 # VIDEO SESSION ENDPOINTS (PROTECTED - For Video Player)
 # ============================================================================
 
+@app.get("/session/pricing/{course_id}")
+async def get_course_pricing(course_id: str):
+    """
+    Get course pricing based on rating
+    Assigns random rating if first access
+    PUBLIC: Anyone can check pricing before watching
+    """
+    try:
+        pricing = await VideoSessionService.get_course_pricing(course_id)
+        return pricing
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @app.post("/session/start", response_model=VideoSessionStartResponse)
 async def start_video_session(
     request: VideoSessionStartRequest,
@@ -486,7 +545,7 @@ async def start_video_session(
 ):
     """
     Start a new video streaming session
-    Locks ₹30 from user's wallet
+    Locks 50% of video cost from user's wallet
     PROTECTED: Users can only start their own sessions
     """
     # Verify user can only start their own session
@@ -496,17 +555,60 @@ async def start_video_session(
     try:
         result = await VideoSessionService.start_session(
             user_id=request.user_id,
-            video_id=request.video_id or "default"
+            video_id=request.video_id or "default",
+            course_id=request.course_id,
+            lock_amount=request.lock_amount,
+            price_per_minute=request.price_per_minute
         )
         
         return VideoSessionStartResponse(
             session_id=result["session_id"],
             locked_amount=result["locked_amount"],
+            price_per_minute=result["price_per_minute"],
             start_time=result["start_time"],
             rate_per_second=result["rate_per_second"]
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/session/end-beacon")
+async def end_video_session_beacon(request: dict):
+    """
+    End video session via sendBeacon (for page unload)
+    This endpoint doesn't require auth headers since sendBeacon can't set them.
+    It processes the session end to ensure user gets refund even if they close the tab.
+    
+    Security: We verify the session belongs to the user by checking the session_id
+    """
+    try:
+        user_id = request.get("user_id")
+        session_id = request.get("session_id")
+        duration_seconds = request.get("duration_seconds", 0)
+        price_per_minute = request.get("price_per_minute", 2.0)
+        locked_amount = request.get("locked_amount", 30.0)
+        
+        if not user_id:
+            return {"status": "error", "message": "Missing user_id"}
+        
+        result = await VideoSessionService.end_session(
+            user_id=user_id,
+            session_id=session_id,
+            duration_seconds=duration_seconds,
+            price_per_minute=price_per_minute,
+            locked_amount=locked_amount
+        )
+        
+        return {
+            "status": "success",
+            "session_id": result["session_id"],
+            "amount_charged": result["amount_charged"],
+            "refund": result["refund"]
+        }
+    except Exception as e:
+        # Log error but don't fail - this is best-effort cleanup
+        print(f"Beacon end session error: {str(e)}")
+        return {"status": "error", "message": str(e)}
 
 
 @app.post("/session/end", response_model=VideoSessionEndResponse)
@@ -515,8 +617,9 @@ async def end_video_session(
     authenticated_user_id: str = Depends(get_current_user_id)
 ):
     """
-    End active video session
-    Calculates charge based on duration, refunds remainder
+    End video session and process payment
+    Frontend sends: duration watched, price rate, locked amount
+    Backend calculates: final charge, refund
     PROTECTED: Users can only end their own sessions
     """
     # Verify user can only end their own session
@@ -524,12 +627,21 @@ async def end_video_session(
         raise HTTPException(status_code=403, detail="Cannot end session for other users")
     
     try:
-        result = await VideoSessionService.end_session(request.user_id)
+        result = await VideoSessionService.end_session(
+            user_id=request.user_id,
+            session_id=request.session_id,
+            duration_seconds=request.duration_seconds,
+            price_per_minute=request.price_per_minute,
+            locked_amount=request.locked_amount
+        )
         
         return VideoSessionEndResponse(
             session_id=result["session_id"],
             duration_seconds=result["duration_seconds"],
+            duration_minutes=result["duration_minutes"],
+            price_per_minute=result["price_per_minute"],
             amount_charged=result["amount_charged"],
+            amount_locked=result["amount_locked"],
             refund=result["refund"],
             final_balance=result["final_balance"],
             ended_at=result["ended_at"]
@@ -763,8 +875,8 @@ print(f"-------------------------------------------\n")
 # In-memory storage for payment intents (demo - for blockchain simulation)
 finternet_payments = {}
 
-# Default initial balance for new users (₹100)
-INITIAL_BALANCE_RUPEES = 100.0
+# Default initial balance for new users (₹200) - matches WalletService.INITIAL_BALANCE
+INITIAL_BALANCE_RUPEES = 200.0
 
 class FinternetPaymentRequest(BaseModel):
     amount: float
@@ -772,6 +884,31 @@ class FinternetPaymentRequest(BaseModel):
     method: str
     payment_details: dict
     user_id: Optional[str] = None
+
+
+class BalanceRequest(BaseModel):
+    user_id: str
+
+
+@app.post("/api/wallet/balance")
+async def post_wallet_balance(request: BalanceRequest):
+    """Get wallet balance - POST version to handle various user ID formats"""
+    try:
+        balance = await WalletService.get_balance(request.user_id)
+        print(f"💰 Balance for {request.user_id}: ₹{balance}")
+        return {
+            "balance": balance,
+            "currency": "INR",
+            "user_id": request.user_id
+        }
+    except Exception as e:
+        print(f"⚠️ Balance fetch error for {request.user_id}: {str(e)}")
+        # Return initial balance if user has no transactions yet
+        return {
+            "balance": INITIAL_BALANCE_RUPEES,
+            "currency": "INR",
+            "user_id": request.user_id
+        }
 
 
 @app.get("/api/wallet/balance")
@@ -783,13 +920,15 @@ async def get_finternet_wallet_balance(
     target_user = user_id or authenticated_user_id
     try:
         balance = await WalletService.get_balance(target_user)
+        print(f"💰 Balance for {target_user}: ₹{balance}")
         return {
             "balance": balance,
             "currency": "INR",
             "user_id": target_user
         }
     except Exception as e:
-        # Return 0 balance if user has no transactions yet (new user gets ₹100)
+        print(f"⚠️ Balance fetch error for {target_user}: {str(e)}")
+        # Return default balance if error
         return {
             "balance": INITIAL_BALANCE_RUPEES,
             "currency": "INR",

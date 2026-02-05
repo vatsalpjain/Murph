@@ -145,7 +145,7 @@ const HomePage: React.FC = () => {
   if (user?.role === 'teacher' && teacherData) {
     return (
       <div className="min-h-screen bg-gray-900">
-        <Navbar walletBalance={walletBalance} />
+        <Navbar />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Welcome Section */}
@@ -223,7 +223,7 @@ const HomePage: React.FC = () => {
   // STUDENT VIEW (existing)
   return (
     <div className="min-h-screen bg-gray-900">
-      <Navbar walletBalance={walletBalance} />
+      <Navbar />
       <Hero onFindSession={handleFindSession} onResumeSession={handleResumeSession} />
 
       {/* Resume Watching Section */}

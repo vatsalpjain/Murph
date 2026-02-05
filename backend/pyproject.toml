@@ -8,4 +8,6 @@ dependencies = [
     "fastapi[standard]>=0.128.0",
     "python-dotenv>=1.2.1",
     "supabase>=2.27.3",
+    "requests>=2.31.0",
+    "eth-account>=0.13.7",
 ]

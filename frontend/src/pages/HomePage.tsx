@@ -197,7 +197,7 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Navbar */}
-      <Navbar walletBalance={walletBalance} />
+      <Navbar />
 
       {/* Hero Section */}
       <Hero onFindSession={handleFindSession} onResumeSession={handleResumeSession} />
