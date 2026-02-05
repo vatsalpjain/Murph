@@ -1,0 +1,42 @@
+[
+  {
+    "id": "course-1",
+    "title": "Guitar Lessons Beginner",
+    "courseTitle": "Guitar Lessons Beginner Friendly",
+    "videoPath": "/shorts/course-1_short.mp4",
+    "courseUrl": "https://www.youtube.com/watch?v=WDjiNviOb8U",
+    "thumbnail": "/shorts/course-1_thumb.jpg"
+  },
+  {
+    "id": "course-2",
+    "title": "Introduction to Baking",
+    "courseTitle": "Introduction to Baking",
+    "videoPath": "/shorts/course-2_short.mp4",
+    "courseUrl": "https://www.youtube.com/watch?v=62MOCMyPce0&list=PL1dleLLvCiHOrrj2lDtCDiU8oX-ySckf8",
+    "thumbnail": "/shorts/course-2_thumb.jpg"
+  },
+  {
+    "id": "course-3",
+    "title": "Learn Crochet from Scratch",
+    "courseTitle": "Learn Crochet from Scratch",
+    "videoPath": "/shorts/course-3_short.mp4",
+    "courseUrl": "https://www.youtube.com/watch?v=MqZ3jCHadcs&list=PLmobLoMZ1riTNFsxCena7K93Zsls6F2CF",
+    "thumbnail": "/shorts/course-3_thumb.jpg"
+  },
+  {
+    "id": "course-4",
+    "title": "Learn Trading in 10 Days",
+    "courseTitle": "Learn Trading in 10 Days",
+    "videoPath": "/shorts/course-4_short.mp4",
+    "courseUrl": "https://www.youtube.com/watch?v=xHU5MHuUSKI",
+    "thumbnail": "/shorts/course-4_thumb.jpg"
+  },
+  {
+    "id": "course-5",
+    "title": "Google AI Course for Beginners",
+    "courseTitle": "Google AI Course for Beginners",
+    "videoPath": "/shorts/course-5_short.mp4",
+    "courseUrl": "https://www.youtube.com/watch?v=Yq0QkCxoTHM",
+    "thumbnail": "/shorts/course-5_thumb.jpg"
+  }
+]
