@@ -54,11 +54,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const storedUser = localStorage.getItem('user');
         const storedSession = localStorage.getItem('session');
-        
+
         if (storedUser && storedSession) {
           const user = JSON.parse(storedUser);
           const session = JSON.parse(storedSession);
-          
+
           // Verify token is still valid with backend
           const response = await fetch(`${BACKEND_URL}/auth/me`, {
             headers: {
@@ -66,7 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               'Content-Type': 'application/json',
             },
           });
-          
+
           if (response.ok) {
             // Token is valid, restore session
             setUser(user);
@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Login with email/password
   const login = async (email: string, password: string) => {
     try {
-      const response = await apiClient.post('/auth/login', 
+      const response = await apiClient.post('/auth/login',
         { email, password },
         { requiresAuth: false }
       );
@@ -114,8 +114,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Close modal
       setShowAuthModal(false);
 
-      // Navigate to home page after successful login
-      navigate('/');
+      // Navigate to home for all users
+      navigate('/home');
     } catch (error) {
       throw error;
     }
@@ -150,8 +150,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Close modal
       setShowAuthModal(false);
 
-      // Navigate to home page after successful signup
-      navigate('/');
+      // Navigate to home for all users
+      navigate('/home');
     } catch (error) {
       throw error;
     }
@@ -172,8 +172,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem('user');
       localStorage.removeItem('session');
 
-      // Navigate to landing page
-      navigate('/landing');
+      // Navigate to root landing page
+      navigate('/');
     }
   };
 

@@ -19,6 +19,7 @@ from payment_service import SessionService, PaymentService
 from wallet_service import WalletService, VideoSessionService
 from auth_service import AuthService
 from analytics_service import AnalyticsService
+from teacher_analytics_service import TeacherAnalyticsService
 
 app = FastAPI(title="Murph Learning Platform API", version="1.0.0")
 
@@ -540,6 +541,99 @@ async def get_user_session_history(
     try:
         sessions = await AnalyticsService.get_user_sessions(user_id, limit)
         return SessionHistoryResponse(sessions=sessions)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ============================================================================
+# TEACHER ANALYTICS ENDPOINTS (PROTECTED - For Teacher Dashboard)
+# ============================================================================
+
+@app.get("/api/teacher/dashboard")
+async def get_teacher_dashboard_analytics(
+    authenticated_user_id: str = Depends(get_current_user_id)
+):
+    """
+    Get comprehensive teacher dashboard analytics
+    Returns: total earnings, monthly earnings, session stats, ratings
+    PROTECTED: Teachers can only access their own dashboard
+    """
+    try:
+        # Get teacher ID from user ID
+        teacher_id = await TeacherAnalyticsService.get_teacher_id_from_user_id(authenticated_user_id)
+        
+        if not teacher_id:
+            raise HTTPException(status_code=404, detail="Teacher profile not found")
+        
+        analytics = await TeacherAnalyticsService.get_dashboard_analytics(teacher_id)
+        return analytics
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/teacher/lecture-earnings")
+async def get_teacher_lecture_earnings(
+    authenticated_user_id: str = Depends(get_current_user_id)
+):
+    """
+    Get lecture-wise earnings breakdown
+    Returns: Array of courses with earnings details per lecture
+    PROTECTED: Teachers can only access their own earnings
+    """
+    try:
+        # Get teacher ID from user ID
+        teacher_id = await TeacherAnalyticsService.get_teacher_id_from_user_id(authenticated_user_id)
+        
+        if not teacher_id:
+            raise HTTPException(status_code=404, detail="Teacher profile not found")
+        
+        lecture_earnings = await TeacherAnalyticsService.get_lecture_wise_earnings(teacher_id)
+        return {"lectures": lecture_earnings}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/teacher/student-scores")
+async def get_teacher_student_scores(
+    course_id: Optional[str] = None,
+    authenticated_user_id: str = Depends(get_current_user_id)
+):
+    """
+    Get student MCQ assessment scores
+    Returns: Array of student scores with discount eligibility
+    PROTECTED: Teachers can only view scores for their own courses
+    """
+    try:
+        # Get teacher ID from user ID
+        teacher_id = await TeacherAnalyticsService.get_teacher_id_from_user_id(authenticated_user_id)
+        
+        if not teacher_id:
+            raise HTTPException(status_code=404, detail="Teacher profile not found")
+        
+        student_scores = await TeacherAnalyticsService.get_student_mcq_scores(teacher_id, course_id)
+        return {"student_scores": student_scores}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/teacher/popular-lectures")
+async def get_teacher_popular_lectures(
+    authenticated_user_id: str = Depends(get_current_user_id)
+):
+    """
+    Get popular lectures analytics
+    Returns: Array of courses sorted by enrollment/popularity
+    PROTECTED: Teachers can only view stats for their own courses
+    """
+    try:
+        # Get teacher ID from user ID
+        teacher_id = await TeacherAnalyticsService.get_teacher_id_from_user_id(authenticated_user_id)
+        
+        if not teacher_id:
+            raise HTTPException(status_code=404, detail="Teacher profile not found")
+        
+        popular_lectures = await TeacherAnalyticsService.get_popular_lectures(teacher_id)
+        return {"popular_lectures": popular_lectures}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

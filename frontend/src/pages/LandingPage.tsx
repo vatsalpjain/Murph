@@ -29,14 +29,19 @@ const customStyles = `
     50% { opacity: 0.9; filter: blur(120px); }
   }
   @keyframes fadeInScale {
-    0% { opacity: 0; transform: scale(0.92) translateY(20px); filter: blur(8px); }
-    40% { opacity: 0.6; filter: blur(2px); }
+    0% { opacity: 0; transform: scale(0.9) translateY(-100px); filter: blur(10px); }
+    60% { opacity: 0.8; filter: blur(2px); }
     100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
   }
+  @keyframes slideUpFade {
+    0% { opacity: 0; transform: translateY(60px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .animate-slide-up { animation: slideUpFade 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; opacity: 0; }
   .animate-float1 { animation: float1 8s ease-in-out infinite, pulse-glow 4s ease-in-out infinite; }
   .animate-float2 { animation: float2 10s ease-in-out infinite, pulse-glow 5s ease-in-out infinite 1s; }
   .animate-float3 { animation: float3 9s ease-in-out infinite, pulse-glow 6s ease-in-out infinite 0.5s; }
-  .animate-logo { animation: fadeInScale 2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-logo { animation: fadeInScale 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
   .font-bebas { font-family: 'Bebas Neue', sans-serif; }
 `;
 
@@ -86,6 +91,15 @@ const LandingPage = () => {
     const [scrolled, setScrolled] = useState(false);
     const [slideIndex, setSlideIndex] = useState<Record<number, number>>({});
     const [activeCourseIndex, setActiveCourseIndex] = useState(0);
+    const [bgImageIndex, setBgImageIndex] = useState(0);
+
+    // Background images that rotate
+    const backgroundImages = [
+        'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2000&auto=format&fit=crop', // Tech/Space
+        'https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=2000&auto=format&fit=crop', // Abstract gradient
+        'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop', // Abstract art
+        'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=2000&auto=format&fit=crop', // Digital waves
+    ];
 
     const courseImagesCount = useMemo(() => {
         return courseShowcase.reduce<Record<number, number>>((acc, course) => {
@@ -93,6 +107,15 @@ const LandingPage = () => {
             return acc;
         }, {});
     }, []);
+
+    // Rotate background images every 3 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setBgImageIndex((prev) => (prev + 1) % backgroundImages.length);
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [backgroundImages.length]);
 
     // Mouse parallax effect
     useEffect(() => {
@@ -168,6 +191,24 @@ const LandingPage = () => {
         <>
             <style>{customStyles}</style>
             <div className="min-h-screen w-full bg-black relative font-bebas text-white overflow-x-hidden">
+
+                {/* Rotating Background Images */}
+                <div className="fixed inset-0 z-0">
+                    {backgroundImages.map((img, index) => (
+                        <div
+                            key={index}
+                            className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+                            style={{
+                                opacity: index === bgImageIndex ? 0.4 : 0,
+                                backgroundImage: `url(${img})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                            }}
+                        />
+                    ))}
+                    {/* Dark overlay for readability */}
+                    <div className="absolute inset-0 bg-black/50" />
+                </div>
 
                 {/* Navigation */}
                 <nav className="fixed top-0 left-0 right-0 z-[1000] px-8 md:px-12 py-5 flex items-center justify-between bg-black border-b border-white/10">
@@ -254,26 +295,27 @@ const LandingPage = () => {
                 {/* Hero Section */}
                 <main className="relative z-10 h-screen flex flex-col justify-center items-center text-center px-6">
                     <h1
-                        className={`font-bebas text-[clamp(140px,26vw,360px)] font-normal tracking-wider select-none animate-logo transition-transform duration-700 ease-out ${scrolled ? 'scale-75 opacity-70' : 'scale-100'
+                        className={`font-bebas text-[clamp(140px,28vw,400px)] font-bold tracking-[0.05em] select-none animate-logo transition-all duration-700 ease-out ${scrolled ? 'scale-75 opacity-70' : 'scale-100'
                             }`}
                         style={{
-                            textShadow: '0 0 40px rgba(255,255,255,0.1), 0 0 80px rgba(0,150,180,0.15)',
+                            textShadow: '0 0 60px rgba(255,255,255,0.3), 0 0 120px rgba(0,200,255,0.4), 0 10px 40px rgba(0,0,0,0.8)',
+                            letterSpacing: '0.1em',
                         }}
                     >
                         MURPH
                     </h1>
-                    <p className="font-sans text-base md:text-lg text-white/70 max-w-2xl -mt-4">
+                    <p className="font-sans text-lg md:text-xl text-white/80 max-w-2xl -mt-6 animate-slide-up">
                         Learn fast with ultra-short lessons. Scroll down to explore your courses and video shorts.
                     </p>
-                    <div className="mt-8 flex items-center gap-3 text-white/70">
-                        <span className="font-sans text-xs uppercase tracking-[0.4em]">Scroll</span>
-                        <span className="h-10 w-px bg-white/30" />
-                        <span className="font-sans text-xs">↓</span>
+                    <div className="mt-10 flex items-center gap-4 text-white/60 animate-slide-up">
+                        <span className="font-sans text-xs uppercase tracking-[0.5em]">Scroll</span>
+                        <span className="h-12 w-px bg-white/30" />
+                        <span className="font-sans text-xl">↓</span>
                     </div>
                 </main>
 
                 {/* Course Showcase */}
-                <section className="relative z-10 px-6 md:px-16 pb-24">
+                <section className="relative z-10 px-6 md:px-16 pb-24 animate-slide-up">
                     <div className="max-w-6xl mx-auto">
                         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10">
                             <div>

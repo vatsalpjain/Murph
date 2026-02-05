@@ -31,6 +31,16 @@ export default function AuthModal() {
 
   if (!showAuthModal) return null;
 
+  const handleClose = () => {
+    setShowAuthModal(false);
+    // Reset form fields
+    setEmail('');
+    setPassword('');
+    setName('');
+    setRole('student');
+    setError('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -56,14 +66,21 @@ export default function AuthModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-md mx-4 bg-white rounded-2xl shadow-2xl">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={handleClose}
+    >
+      <div
+        className="relative w-full max-w-md mx-4 bg-white rounded-2xl shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Close button */}
         <button
-          onClick={() => setShowAuthModal(false)}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          onClick={handleClose}
+          className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
+          aria-label="Close modal"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5" />
         </button>
 
         {/* Modal content */}
@@ -148,8 +165,8 @@ export default function AuthModal() {
                     type="button"
                     onClick={() => setRole('student')}
                     className={`flex-1 py-3 px-4 rounded-lg border-2 font-medium transition-all ${role === 'student'
-                        ? 'border-blue-600 bg-blue-50 text-blue-600'
-                        : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      ? 'border-blue-600 bg-blue-50 text-blue-600'
+                      : 'border-gray-300 text-gray-700 hover:border-gray-400'
                       }`}
                   >
                     Student
@@ -158,8 +175,8 @@ export default function AuthModal() {
                     type="button"
                     onClick={() => setRole('teacher')}
                     className={`flex-1 py-3 px-4 rounded-lg border-2 font-medium transition-all ${role === 'teacher'
-                        ? 'border-blue-600 bg-blue-50 text-blue-600'
-                        : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      ? 'border-blue-600 bg-blue-50 text-blue-600'
+                      : 'border-gray-300 text-gray-700 hover:border-gray-400'
                       }`}
                   >
                     Teacher

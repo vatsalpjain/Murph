@@ -72,7 +72,12 @@ class AuthService:
                     "name": name,
                     "role": role
                 },
-                "session": auth_response.session,
+                "session": {
+                    "access_token": auth_response.session.access_token,
+                    "refresh_token": auth_response.session.refresh_token,
+                    "expires_in": auth_response.session.expires_in,
+                    "token_type": auth_response.session.token_type
+                },
                 "message": "Account created successfully"
             }
             
@@ -129,7 +134,12 @@ class AuthService:
             
             return {
                 "user": user_profile.data,
-                "session": auth_response.session,
+                "session": {
+                    "access_token": auth_response.session.access_token,
+                    "refresh_token": auth_response.session.refresh_token,
+                    "expires_in": auth_response.session.expires_in,
+                    "token_type": auth_response.session.token_type
+                },
                 "message": "Login successful"
             }
             
@@ -181,7 +191,12 @@ class AuthService:
             
             return {
                 "user": user_profile,
-                "session": auth_response.session,
+                "session": {
+                    "access_token": auth_response.session.access_token,
+                    "refresh_token": auth_response.session.refresh_token,
+                    "expires_in": auth_response.session.expires_in,
+                    "token_type": auth_response.session.token_type
+                },
                 "message": "Google login successful",
                 "is_new_user": not existing_user.data
             }

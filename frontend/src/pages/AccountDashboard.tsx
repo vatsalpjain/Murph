@@ -15,7 +15,15 @@ import {
   Play,
   ArrowLeft,
   LogOut,
+  Users,
+  BookOpen,
+  DollarSign,
+  TrendingUp,
+  Award,
 } from "lucide-react";
+import LectureEarningsTable from '../components/LectureEarningsTable';
+import StudentScoresTable from '../components/StudentScoresTable';
+import PopularLecturesChart from '../components/PopularLecturesChart';
 
 // ==================== TYPES ====================
 
@@ -74,29 +82,72 @@ const domainColors: Record<string, string> = {
   "Fitness": "bg-red-500/20 text-red-400 border-red-500/30",
 };
 
-// ==================== COMPONENTS ====================
+// Generate random teacher data for demonstration
+const generateRandomTeacherData = () => {
+  const totalEarnings = 12567.50 + Math.random() * 5000;
+  const monthlyEarnings = 2340 + Math.random() * 1000;
 
-function DashboardHeader({ navigate, user, logout, walletBalance }: {
+  const lectures = [
+    { course_id: '1', course_title: 'Advanced React Patterns', category: 'Programming', num_lectures: 12, total_sessions: 23, total_students: 18, total_earnings: 2345 + Math.random() * 1000, avg_earnings_per_session: 102, price_per_minute: 2.5 },
+    { course_id: '2', course_title: 'Machine Learning Fundamentals', category: 'AI/ML', num_lectures: 15, total_sessions: 31, total_students: 25, total_earnings: 3567 + Math.random() * 1000, avg_earnings_per_session: 115, price_per_minute: 3.0 },
+    { course_id: '3', course_title: 'Web Development Bootcamp', category: 'Programming', num_lectures: 20, total_sessions: 45, total_students: 36, total_earnings: 4234 + Math.random() * 1500, avg_earnings_per_session: 94, price_per_minute: 2.0 },
+    { course_id: '4', course_title: 'Data Science with Python', category: 'Data Science', num_lectures: 18, total_sessions: 28, total_students: 22, total_earnings: 2421 + Math.random() * 800, avg_earnings_per_session: 86, price_per_minute: 2.2 },
+  ];
+
+  const scores = [
+    { session_id: '1', student_name: 'Alice Johnson', student_email: 'alice@example.com', course_title: 'Advanced React Patterns', assessment_score: 95, discount_eligible: true, session_date: new Date().toISOString(), duration_seconds: 3600 },
+    { session_id: '2', student_name: 'Bob Smith', student_email: 'bob@example.com', course_title: 'Machine Learning Fundamentals', assessment_score: 88, discount_eligible: false, session_date: new Date().toISOString(), duration_seconds: 4200 },
+    { session_id: '3', student_name: 'Carol White', student_email: 'carol@example.com', course_title: 'Web Development Bootcamp', assessment_score: 92, discount_eligible: true, session_date: new Date().toISOString(), duration_seconds: 3900 },
+    { session_id: '4', student_name: 'David Lee', student_email: 'david@example.com', course_title: 'Data Science with Python', assessment_score: 78, discount_eligible: false, session_date: new Date().toISOString(), duration_seconds: 3300 },
+    { session_id: '5', student_name: 'Emma Davis', student_email: 'emma@example.com', course_title: 'Advanced React Patterns', assessment_score: 96, discount_eligible: true, session_date: new Date().toISOString(), duration_seconds: 3750 },
+  ];
+
+  const popular = [
+    { course_id: '3', course_title: 'Web Development Bootcamp', category: 'Programming', total_enrollments: 36, total_sessions: 45, completed_sessions: 42, completion_rate: 93.3, total_revenue: 4234, average_rating: 4.8, total_reviews: 28, is_active: true },
+    { course_id: '2', course_title: 'Machine Learning Fundamentals', category: 'AI/ML', total_enrollments: 25, total_sessions: 31, completed_sessions: 29, completion_rate: 93.5, total_revenue: 3567, average_rating: 4.9, total_reviews: 22, is_active: true },
+    { course_id: '4', course_title: 'Data Science with Python', category: 'Data Science', total_enrollments: 22, total_sessions: 28, completed_sessions: 25, completion_rate: 89.3, total_revenue: 2421, average_rating: 4.7, total_reviews: 18, is_active: true },
+    { course_id: '1', course_title: 'Advanced React Patterns', category: 'Programming', total_enrollments: 18, total_sessions: 23, completed_sessions: 21, completion_rate: 91.3, total_revenue: 2345, average_rating: 4.6, total_reviews: 15, is_active: true },
+  ];
+
+  return {
+    totalEarnings,
+    monthlyEarnings,
+    lectures,
+    scores,
+    popular,
+    stats: {
+      total_sessions: 127,
+      total_students: 101,
+      average_rating: 4.75,
+      total_reviews: 83
+    }
+  };
+};
+
+// ==================== STUDENT COMPONENTS ====================
+
+function DashboardHeader({ navigate, user, logout, walletBalance, isTeacher }: {
   navigate: (path: string) => void;
   user: any;
   logout: () => void;
   walletBalance: number;
+  isTeacher?: boolean;
 }) {
   return (
     <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
       <div>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/home')}
           className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
         >
           <ArrowLeft className="h-5 w-5" />
           Back to Home
         </button>
         <h1 className="text-3xl md:text-4xl font-bold text-white">
-          Welcome, <span className="text-green-500">{user?.name || 'Student'}!</span>
+          Welcome, <span className="text-green-500">{user?.name || 'User'}!</span>
         </h1>
         <p className="text-slate-400 mt-2 text-lg">
-          Track your learning progress and activity
+          {isTeacher ? 'Track your teaching progress and earnings' : 'Track your learning progress and activity'}
         </p>
       </div>
 
@@ -107,23 +158,34 @@ function DashboardHeader({ navigate, user, logout, walletBalance }: {
               <Wallet className="h-5 w-5 text-green-500" />
             </div>
             <div>
-              <p className="text-sm text-slate-400">Account Balance</p>
+              <p className="text-sm text-slate-400">{isTeacher ? 'Total Earnings' : 'Account Balance'}</p>
               <p className="text-xl font-bold text-white">₹{walletBalance.toFixed(2)}</p>
             </div>
           </div>
-          <div className="flex gap-2 ml-4">
+          {!isTeacher && (
+            <div className="flex gap-2 ml-4">
+              <button
+                onClick={() => navigate('/payment')}
+                className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+              >
+                <Plus className="h-4 w-4" />
+                Add Money
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2 bg-transparent border border-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors">
+                <RefreshCw className="h-4 w-4" />
+                Refund
+              </button>
+            </div>
+          )}
+          {isTeacher && (
             <button
               onClick={() => navigate('/payment')}
-              className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors ml-4"
             >
-              <Plus className="h-4 w-4" />
-              Add Money
+              <History className="h-4 w-4" />
+              Transactions
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-transparent border border-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors">
-              <RefreshCw className="h-4 w-4" />
-              Refund
-            </button>
-          </div>
+          )}
         </div>
 
         <button
@@ -280,7 +342,6 @@ function DailyAnalytics({
       </div>
       <div className="p-6 pt-0">
         <div className="space-y-6">
-          {/* Bar Chart */}
           <div className="flex items-end justify-between gap-2 h-40">
             {weeklyData.map((data) => (
               <div key={data.day} className="flex-1 flex flex-col items-center gap-2">
@@ -293,7 +354,6 @@ function DailyAnalytics({
             ))}
           </div>
 
-          {/* Domain Legend */}
           <div className="pt-4 border-t border-slate-700">
             <p className="text-sm font-medium text-white mb-3">Domain-wise Analytics</p>
             <div className="grid grid-cols-2 gap-3">
@@ -352,7 +412,6 @@ function WatchHistorySection({
                 key={video.id}
                 className="flex items-center gap-4 p-4 rounded-xl bg-slate-700/30 hover:bg-slate-700/50 transition-colors group cursor-pointer"
               >
-                {/* Thumbnail placeholder */}
                 <div className="relative w-32 h-20 rounded-lg bg-slate-700 flex items-center justify-center shrink-0 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-blue-500/20" />
                   <Play className="h-8 w-8 text-white/50 group-hover:text-green-500 transition-colors" />
@@ -361,7 +420,6 @@ function WatchHistorySection({
                   </div>
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-white truncate group-hover:text-green-500 transition-colors">
                     {video.title}
@@ -377,7 +435,6 @@ function WatchHistorySection({
                       {video.watched} watched
                     </span>
                   </div>
-                  {/* Progress bar */}
                   <div className="mt-3 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all ${video.progress === 100 ? "bg-green-500" : "bg-green-500/70"
@@ -387,7 +444,6 @@ function WatchHistorySection({
                   </div>
                 </div>
 
-                {/* Date */}
                 <div className="text-sm text-slate-400 shrink-0">{video.date}</div>
               </div>
             ))
@@ -404,7 +460,10 @@ const AccountDashboard = () => {
   const navigate = useNavigate();
   const { user, session, isAuthenticated, logout } = useAuth();
 
-  // State for all dashboard data
+  // Determine if user is a teacher
+  const isTeacher = user?.role === 'teacher';
+
+  // State for student dashboard data
   const [stats, setStats] = useState<StatItem[]>([]);
   const [walletBalance, setWalletBalance] = useState<number>(100);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
@@ -415,6 +474,9 @@ const AccountDashboard = () => {
   const [watchHistory, setWatchHistory] = useState<WatchHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // State for teacher dashboard data
+  const [teacherData, setTeacherData] = useState<any>(null);
 
   // Redirect to home if not authenticated - only once
   useEffect(() => {
@@ -428,7 +490,7 @@ const AccountDashboard = () => {
     return null;
   }
 
-  // Fetch all dashboard data on mount
+  // Fetch dashboard data based on role
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!user || !session) return;
@@ -436,13 +498,22 @@ const AccountDashboard = () => {
       setLoading(true);
       setError(null);
 
+      // TEACHER: Use random mock data
+      if (isTeacher) {
+        const data = generateRandomTeacherData();
+        setTeacherData(data);
+        setWalletBalance(data.totalEarnings);
+        setLoading(false);
+        return;
+      }
+
+      // STUDENT: Fetch real data from API
       try {
         const headers = {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         };
 
-        // Fetch user analytics (stats)
         const analyticsRes = await fetch(
           `${BACKEND_URL}/api/stats/user-analytics/${user.id}`,
           { headers }
@@ -451,7 +522,6 @@ const AccountDashboard = () => {
         if (!analyticsRes.ok) throw new Error('Failed to fetch analytics');
         const analyticsData = await analyticsRes.json();
 
-        // Fetch wallet balance
         try {
           const balanceRes = await fetch(`${BACKEND_URL}/api/wallet/balance`, { headers });
           if (balanceRes.ok) {
@@ -462,77 +532,30 @@ const AccountDashboard = () => {
           console.error('Failed to fetch wallet balance:', err);
         }
 
-        // Build stats array from analytics data
         const fetchedStats: StatItem[] = [
-          {
-            title: "Watch Streak",
-            value: analyticsData.current_streak.toString(),
-            unit: "days",
-            icon: Flame,
-            color: "text-orange-500",
-            bgColor: "bg-orange-500/10",
-          },
-          {
-            title: "Total Hours Watched",
-            value: analyticsData.total_hours_watched.toString(),
-            unit: "hours",
-            icon: Clock,
-            color: "text-green-500",
-            bgColor: "bg-green-500/10",
-          },
-          {
-            title: "Videos Watched",
-            value: analyticsData.total_videos_watched.toString(),
-            unit: "videos",
-            icon: PlayCircle,
-            color: "text-blue-500",
-            bgColor: "bg-blue-500/10",
-          },
-          {
-            title: "Active Domains",
-            value: analyticsData.active_domains.toString(),
-            unit: "domains",
-            icon: Layers,
-            color: "text-purple-500",
-            bgColor: "bg-purple-500/10",
-          },
+          { title: "Watch Streak", value: analyticsData.current_streak.toString(), unit: "days", icon: Flame, color: "text-orange-500", bgColor: "bg-orange-500/10" },
+          { title: "Total Hours Watched", value: analyticsData.total_hours_watched.toString(), unit: "hours", icon: Clock, color: "text-green-500", bgColor: "bg-green-500/10" },
+          { title: "Videos Watched", value: analyticsData.total_videos_watched.toString(), unit: "videos", icon: PlayCircle, color: "text-blue-500", bgColor: "bg-blue-500/10" },
+          { title: "Active Domains", value: analyticsData.active_domains.toString(), unit: "domains", icon: Layers, color: "text-purple-500", bgColor: "bg-purple-500/10" },
         ];
         setStats(fetchedStats);
 
-        // Fetch watch calendar
-        const calendarRes = await fetch(
-          `${BACKEND_URL}/api/stats/watch-calendar/${user.id}?days=28`,
-          { headers }
-        );
-
+        const calendarRes = await fetch(`${BACKEND_URL}/api/stats/watch-calendar/${user.id}?days=28`, { headers });
         if (!calendarRes.ok) throw new Error('Failed to fetch calendar');
         const calendarData = await calendarRes.json();
-
         setCalendarDays(calendarData.calendar_days);
         setCurrentStreak(calendarData.current_streak);
         setLongestStreak(calendarData.longest_streak);
 
-        // Fetch domain analytics
-        const domainRes = await fetch(
-          `${BACKEND_URL}/api/stats/domain-analytics/${user.id}`,
-          { headers }
-        );
-
+        const domainRes = await fetch(`${BACKEND_URL}/api/stats/domain-analytics/${user.id}`, { headers });
         if (!domainRes.ok) throw new Error('Failed to fetch domain analytics');
         const domainData = await domainRes.json();
-
         setWeeklyData(domainData.weekly_data);
         setDomains(domainData.domains);
 
-        // Fetch session history
-        const historyRes = await fetch(
-          `${BACKEND_URL}/api/sessions/user/${user.id}?limit=10`,
-          { headers }
-        );
-
+        const historyRes = await fetch(`${BACKEND_URL}/api/sessions/user/${user.id}?limit=10`, { headers });
         if (!historyRes.ok) throw new Error('Failed to fetch session history');
         const historyData = await historyRes.json();
-
         setWatchHistory(historyData.sessions);
 
       } catch (err) {
@@ -544,14 +567,14 @@ const AccountDashboard = () => {
     };
 
     fetchDashboardData();
-  }, [user, session]);
+  }, [user, session, isTeacher]);
 
   // Show error if data fetch failed
   if (error) {
     return (
       <main className="min-h-screen bg-slate-900">
         <div className="container mx-auto px-4 py-8 max-w-7xl">
-          <DashboardHeader navigate={navigate} user={user} logout={logout} walletBalance={walletBalance} />
+          <DashboardHeader navigate={navigate} user={user} logout={logout} walletBalance={walletBalance} isTeacher={isTeacher} />
           <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
             <p className="text-red-400 text-lg">{error}</p>
             <button
@@ -566,10 +589,50 @@ const AccountDashboard = () => {
     );
   }
 
+  // TEACHER DASHBOARD
+  if (isTeacher && teacherData) {
+    const teacherStats: StatItem[] = [
+      { title: "Total Students", value: teacherData.stats.total_students.toString(), unit: "students", icon: Users, color: "text-blue-500", bgColor: "bg-blue-500/10" },
+      { title: "Total Sessions", value: teacherData.stats.total_sessions.toString(), unit: "sessions", icon: BookOpen, color: "text-purple-500", bgColor: "bg-purple-500/10" },
+      { title: "Total Earnings", value: `₹${teacherData.totalEarnings.toFixed(0)}`, unit: "", icon: DollarSign, color: "text-green-500", bgColor: "bg-green-500/10" },
+      { title: "Avg. Rating", value: teacherData.stats.average_rating.toFixed(1), unit: "/5", icon: TrendingUp, color: "text-orange-500", bgColor: "bg-orange-500/10" },
+    ];
+
+    return (
+      <main className="min-h-screen bg-slate-900">
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+          <DashboardHeader navigate={navigate} user={user} logout={logout} walletBalance={walletBalance} isTeacher={true} />
+
+          {/* Monthly earnings highlight */}
+          {teacherData.monthlyEarnings > 0 && (
+            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-xl flex items-center gap-3">
+              <Award className="h-6 w-6 text-green-500" />
+              <p className="text-green-400 font-medium">
+                +₹{teacherData.monthlyEarnings.toFixed(2)} earned this month
+              </p>
+            </div>
+          )}
+
+          <StatsCards stats={teacherStats} loading={loading} />
+
+          <div className="mt-8">
+            <LectureEarningsTable lectures={teacherData.lectures} isLoading={loading} />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+            <StudentScoresTable scores={teacherData.scores} isLoading={loading} />
+            <PopularLecturesChart lectures={teacherData.popular} isLoading={loading} />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // STUDENT DASHBOARD
   return (
     <main className="min-h-screen bg-slate-900">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <DashboardHeader navigate={navigate} user={user} logout={logout} walletBalance={walletBalance} />
+        <DashboardHeader navigate={navigate} user={user} logout={logout} walletBalance={walletBalance} isTeacher={false} />
         <StatsCards stats={stats} loading={loading} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           <StreakCalendar

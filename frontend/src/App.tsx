@@ -1,12 +1,13 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import AuthModal from './components/AuthModal';
 import LandingPage from './pages/LandingPage';
 import HomePage from './pages/HomePage';
 import AccountDashboard from './pages/AccountDashboard';
 import VideoPlayer from './pages/VideoPlayer';
 import PaymentDashboard from './pages/PaymentDashboard';
+import TeacherDashboard from './pages/TeacherDashboard';
 import './App.css';
 
 /**
@@ -26,15 +27,11 @@ function App() {
         <AuthModal />
 
         <Routes>
-          {/* Landing page - only for non-authenticated users */}
-          <Route path="/landing" element={
-            <PublicRoute>
-              <LandingPage />
-            </PublicRoute>
-          } />
+          {/* Landing page - root path, accessible to all */}
+          <Route path="/" element={<LandingPage />} />
 
-          {/* Home page - requires authentication */}
-          <Route path="/" element={
+          {/* Home page - requires authentication, role-aware content */}
+          <Route path="/home" element={
             <ProtectedRoute>
               <HomePage />
             </ProtectedRoute>
@@ -54,11 +51,15 @@ function App() {
             </ProtectedRoute>
           } />
 
+          {/* Teacher Dashboard - requires authentication */}
+          <Route path="/teacher-dashboard" element={
+            <ProtectedRoute>
+              <TeacherDashboard />
+            </ProtectedRoute>
+          } />
+
           {/* Payment Dashboard - public for demo */}
           <Route path="/payment" element={<PaymentDashboard />} />
-
-          {/* Catch-all: redirect invalid URLs to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </Router>
