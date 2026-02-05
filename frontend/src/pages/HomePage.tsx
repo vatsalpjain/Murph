@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import ResumeCard from '../components/ResumeCard';
 import CourseCard from '../components/CourseCard';
 import Footer from '../components/Footer';
 import CourseShortsPreview from '../components/CourseShortsPreview';
+import ChatBot from '../components/ChatBot';
 import type { Short } from '../components/CourseShortsPreview';
 
 // Mock Data
@@ -23,58 +24,76 @@ const mockRecommendedSessions = [
     id: 1,
     title: 'Machine Learning Fundamentals',
     instructor: 'Dr. James Wilson',
+    thumbnail: '/thumbnails/ml-fundamentals.svg',
     duration: 120,
     pricePerMinute: 0.05,
     rating: 4.8,
     reviewCount: 2340,
     badge: 'Highly-Rated',
+    topic: 'machine learning',
+    relatedVideos: 'Artificial Intelligence, Neural Networks, TensorFlow',
   },
   {
     id: 2,
     title: 'Web Development Masterclass',
     instructor: 'Emma Rodriguez',
+    thumbnail: '/thumbnails/web-dev-masterclass.svg',
     duration: 90,
     pricePerMinute: 0.04,
     rating: 4.9,
     reviewCount: 3120,
     badge: 'Best-Seller',
+    topic: 'web development',
+    relatedVideos: 'React, JavaScript, Node.js, HTML/CSS',
   },
   {
     id: 3,
     title: 'Cloud Architecture Essentials',
     instructor: 'Michael Zhang',
+    thumbnail: '/thumbnails/cloud-architecture.svg',
     duration: 150,
     pricePerMinute: 0.06,
     rating: 4.7,
     reviewCount: 1890,
+    topic: 'cloud computing',
+    relatedVideos: 'AWS, Azure, Google Cloud, DevOps',
   },
   {
     id: 4,
     title: 'Data Science Deep Dive',
     instructor: 'Dr. Priya Sharma',
+    thumbnail: '/thumbnails/data-science.svg',
     duration: 180,
     pricePerMinute: 0.07,
     rating: 4.9,
     reviewCount: 2560,
     badge: 'Trending',
+    topic: 'data science',
+    relatedVideos: 'Python, Pandas, Numpy, Data Analysis',
   },
   {
     id: 5,
     title: 'Product Management Bootcamp',
     instructor: 'Alex Patterson',
+    thumbnail: '/thumbnails/product-management.svg',
     duration: 100,
     pricePerMinute: 0.05,
     rating: 4.6,
     reviewCount: 1450,
+    topic: 'product management',
+    relatedVideos: 'Project Management, Leadership, Agile, Scrum',
   },
   {
     id: 6,
     title: 'UI/UX Design Principles',
     instructor: 'Lisa Johnson',
+    thumbnail: '/thumbnails/ui-ux-design.svg',
     duration: 75,
     pricePerMinute: 0.04,
     rating: 4.8,
     reviewCount: 2890,
+    topic: 'ui/ux design',
+    relatedVideos: 'Figma, Adobe XD, Wireframing, Prototyping',
   },
 ];
 
@@ -161,26 +180,9 @@ const mockInstructors = [
 ];
 
 const HomePage: React.FC = () => {
-  const [walletBalance, setWalletBalance] = useState<number>(100); // Default ₹100
-  const [chatOpen, setChatOpen] = useState(false);
+  const navigate = useNavigate();
+  const [walletBalance] = useState<number>(125.50);
   const [shorts, setShorts] = useState<Short[]>([]);
-
-  // Fetch wallet balance from API
-  useEffect(() => {
-    const fetchBalance = async () => {
-      try {
-        const res = await fetch('http://localhost:8000/api/wallet/balance-public');
-        if (res.ok) {
-          const data = await res.json();
-          setWalletBalance(data.balance);
-        }
-      } catch (error) {
-        console.error('Failed to fetch balance:', error);
-        // Keep default ₹100 for new users
-      }
-    };
-    fetchBalance();
-  }, []);
 
   // Load course shorts metadata
   useEffect(() => {
@@ -194,25 +196,25 @@ const HomePage: React.FC = () => {
           setShorts(Array.isArray(data) ? data : (data.shorts || []));
           console.log('Loaded shorts:', data);
         } else {
-          // File not found, use empty array
-          console.log('No shorts metadata found, using empty array');
-          setShorts([]);
+          console.error('Failed to fetch shorts metadata:', response.status);
         }
       } catch (error) {
-        // Silently handle error and use empty array
-        console.log('No shorts available');
-        setShorts([]);
+        console.error('Error loading shorts:', error);
       }
     };
     loadShorts();
   }, []);
 
   const handleFindSession = () => {
-    alert('Redirecting to session discovery...');
+    navigate('/find-session');
   };
 
   const handleResumeSession = () => {
     alert('Resuming your session...');
+  };
+
+  const handleCategoryClick = (categoryName: string) => {
+    navigate(`/video-player?domain=${encodeURIComponent(categoryName)}`);
   };
 
   return (
@@ -262,35 +264,16 @@ const HomePage: React.FC = () => {
                 key={session.id}
                 title={session.title}
                 instructor={session.instructor}
+                thumbnail={session.thumbnail}
                 duration={session.duration}
                 pricePerMinute={session.pricePerMinute}
                 rating={session.rating}
                 reviewCount={session.reviewCount}
                 badge={session.badge}
+                topic={session.topic}
+                relatedVideos={session.relatedVideos}
+                onViewPlaylist={() => navigate(`/video-player?q=${encodeURIComponent(session.topic)}`)}
               />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Explore by Domain */}
-      <section className="bg-gray-800 py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-bold text-white mb-2">Explore by Domain</h2>
-          <p className="text-gray-400 mb-8">Find sessions in any category</p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {mockCategories.map((category) => (
-              <div
-                key={category.id}
-                className="bg-gray-700/50 backdrop-blur-sm rounded-xl p-5 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-1 border border-gray-600"
-              >
-                <div className="text-4xl mb-3">{category.icon}</div>
-                <h3 className="font-semibold text-white text-base mb-1">
-                  {category.name}
-                </h3>
-                <p className="text-sm text-gray-400">{category.sessionCount} sessions</p>
-              </div>
             ))}
           </div>
         </div>
@@ -390,47 +373,8 @@ const HomePage: React.FC = () => {
       {/* Footer */}
       <Footer />
 
-      {/* Floating AI Chat Button */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <button
-          onClick={() => setChatOpen(!chatOpen)}
-          className="w-14 h-14 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/70 transition-all duration-300 flex items-center justify-center hover:scale-110 group"
-        >
-          <MessageCircle className="w-6 h-6" />
-          <span className="absolute bottom-full right-0 mb-3 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity border border-gray-700">
-            Ask Murph AI
-          </span>
-        </button>
-
-        {/* Chat Modal (Placeholder) */}
-        {chatOpen && (
-          <div className="absolute bottom-20 right-0 w-80 h-96 bg-gray-800 rounded-lg shadow-2xl border border-gray-700 flex flex-col">
-            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 rounded-t-lg flex justify-between items-center">
-              <h3 className="font-semibold">Murph AI Assistant</h3>
-              <button
-                onClick={() => setChatOpen(false)}
-                className="text-xl hover:opacity-80"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="flex-1 p-4 overflow-y-auto">
-              <div className="mb-4">
-                <p className="text-sm text-gray-200 bg-gray-700 rounded-lg p-3 inline-block">
-                  Hi! 👋 I'm Murph AI. How can I help you find the perfect session?
-                </p>
-              </div>
-            </div>
-            <div className="p-4 border-t border-gray-700">
-              <input
-                type="text"
-                placeholder="Ask something..."
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-              />
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Floating Chat Bot */}
+      <ChatBot />
     </div>
   );
 };
