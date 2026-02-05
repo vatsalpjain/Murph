@@ -297,7 +297,7 @@ function DashboardHeader({ navigate, user, logout, walletBalance, isTeacher }: {
           Back to Home
         </button>
         <h1 className="text-3xl md:text-4xl font-bold text-white">
-          Welcome, <span className="text-green-500">{user?.name || 'User'}!</span>
+          Welcome, <span className="bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">{user?.name || 'User'}!</span>
         </h1>
         <p className="text-slate-400 mt-2 text-lg">
           {isTeacher ? 'Track your teaching progress and earnings' : 'Track your learning progress and activity'}
@@ -305,35 +305,29 @@ function DashboardHeader({ navigate, user, logout, walletBalance, isTeacher }: {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-4 bg-slate-800 rounded-xl p-4 border border-slate-700">
+        <div className="flex items-center gap-4 bg-white/5 backdrop-blur-xl rounded-2xl p-4 border border-white/10 hover:border-white/20 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-green-500/10">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/20">
               <Wallet className="h-5 w-5 text-green-500" />
             </div>
             <div>
               <p className="text-sm text-slate-400">{isTeacher ? 'Total Earnings' : 'Account Balance'}</p>
-              <p className="text-xl font-bold text-white">₹{walletBalance.toFixed(2)}</p>
+              <p className="text-xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">₹{walletBalance.toFixed(2)}</p>
             </div>
           </div>
           {!isTeacher && (
-            <div className="flex gap-2 ml-4">
-              <button
-                onClick={() => navigate('/payment')}
-                className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                Add Money
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-transparent border border-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium transition-colors">
-                <RefreshCw className="h-4 w-4" />
-                Refund
-              </button>
-            </div>
+            <button
+              onClick={() => navigate('/payment')}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl font-medium transition-all ml-4 shadow-lg shadow-green-500/25"
+            >
+              <Plus className="h-4 w-4" />
+              Add Money
+            </button>
           )}
           {isTeacher && (
             <button
               onClick={() => navigate('/payment')}
-              className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors ml-4"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl font-medium transition-all ml-4 shadow-lg shadow-green-500/25"
             >
               <History className="h-4 w-4" />
               Transactions
@@ -343,7 +337,7 @@ function DashboardHeader({ navigate, user, logout, walletBalance, isTeacher }: {
 
         <button
           onClick={logout}
-          className="flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-400 rounded-lg font-medium transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-red-500/10 backdrop-blur-sm border border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30 text-red-400 rounded-xl font-medium transition-all"
         >
           <LogOut className="h-4 w-4" />
           Logout
@@ -371,9 +365,11 @@ function StatsCards({ stats, loading }: { stats: StatItem[], loading: boolean })
       {stats.map((stat) => (
         <div
           key={stat.title}
-          className="bg-slate-800 border border-slate-700 hover:border-green-500/50 transition-colors rounded-xl p-6"
+          className="relative group bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all duration-300 rounded-2xl p-6 overflow-hidden"
         >
-          <div className="flex items-start justify-between">
+          {/* Gradient glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="relative flex items-start justify-between">
             <div>
               <p className="text-sm text-slate-400">{stat.title}</p>
               <div className="flex items-baseline gap-2 mt-2">
@@ -381,7 +377,7 @@ function StatsCards({ stats, loading }: { stats: StatItem[], loading: boolean })
                 <span className="text-sm text-slate-400">{stat.unit}</span>
               </div>
             </div>
-            <div className={`p-3 rounded-xl ${stat.bgColor}`}>
+            <div className={`p-3 rounded-xl backdrop-blur-sm ${stat.bgColor} border border-white/10`}>
               <stat.icon className={`h-6 w-6 ${stat.color}`} />
             </div>
           </div>
@@ -411,7 +407,7 @@ function StreakCalendar({
   }
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl">
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
       <div className="flex items-center justify-between p-6 pb-2">
         <h2 className="text-lg font-semibold text-white flex items-center gap-2">
           <CalendarDays className="h-5 w-5 text-green-500" />
@@ -483,37 +479,111 @@ function DailyAnalytics({
     );
   }
 
+  // Bar colors for each day - vibrant gradient colors
+  const barColors = [
+    'from-blue-500 to-blue-400',      // Mon
+    'from-purple-500 to-purple-400',  // Tue
+    'from-pink-500 to-pink-400',      // Wed
+    'from-orange-500 to-orange-400',  // Thu
+    'from-green-500 to-green-400',    // Fri
+    'from-cyan-500 to-cyan-400',      // Sat
+    'from-yellow-500 to-yellow-400',  // Sun
+  ];
+  
+  const barShadows = [
+    'shadow-blue-500/40',
+    'shadow-purple-500/40',
+    'shadow-pink-500/40',
+    'shadow-orange-500/40',
+    'shadow-green-500/40',
+    'shadow-cyan-500/40',
+    'shadow-yellow-500/40',
+  ];
+
   const maxHours = Math.max(...weeklyData.map((d) => d.hours), 1);
+  // Create Y-axis labels (5 steps)
+  const yAxisSteps = 4;
+  const yAxisLabels = Array.from({ length: yAxisSteps + 1 }, (_, i) => 
+    Math.round((maxHours / yAxisSteps) * (yAxisSteps - i))
+  );
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl">
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
       <div className="p-6 pb-2">
         <h2 className="text-lg font-semibold text-white flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-green-500" />
           Daily Analytics
         </h2>
+        <p className="text-xs text-slate-400 mt-1">Hours watched per day this week</p>
       </div>
-      <div className="p-6 pt-0">
+      <div className="p-6 pt-4">
         <div className="space-y-6">
-          <div className="flex items-end justify-between gap-2 h-40">
-            {weeklyData.map((data) => (
-              <div key={data.day} className="flex-1 flex flex-col items-center gap-2">
-                <div
-                  className="w-full bg-green-500 rounded-t-md transition-all duration-300 hover:bg-green-400"
-                  style={{ height: `${(data.hours / maxHours) * 100}%` }}
-                />
-                <span className="text-xs text-slate-400">{data.day}</span>
+          {/* Chart Container */}
+          <div className="relative h-52">
+            {/* Y-axis labels */}
+            <div className="absolute left-0 top-0 bottom-8 w-10 flex flex-col justify-between text-right pr-3">
+              {yAxisLabels.map((label, i) => (
+                <span key={i} className="text-xs text-slate-500">{label}h</span>
+              ))}
+            </div>
+            
+            {/* Chart area */}
+            <div className="ml-12 h-full pb-8 relative">
+              {/* Horizontal grid lines */}
+              <div className="absolute inset-0 bottom-8 flex flex-col justify-between pointer-events-none">
+                {yAxisLabels.map((_, i) => (
+                  <div key={i} className="border-t border-white/5 w-full" />
+                ))}
               </div>
-            ))}
+              
+              {/* Bars */}
+              <div className="flex items-end justify-around gap-4 h-full pb-8 relative">
+                {weeklyData.map((data, index) => {
+                  const heightPercent = maxHours > 0 ? (data.hours / maxHours) * 100 : 0;
+                  const isToday = index === (new Date().getDay() + 6) % 7; // Adjust for Mon=0
+                  
+                  return (
+                    <div key={data.day} className="flex-1 flex flex-col items-center justify-end h-full group relative">
+                      {/* Tooltip on hover */}
+                      <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 absolute -top-2 bg-slate-900/90 backdrop-blur-sm border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white whitespace-nowrap z-20 shadow-xl">
+                        <span className="font-semibold">{data.hours}h</span>
+                        <span className="text-slate-400 ml-1">watched</span>
+                      </div>
+                      
+                      {/* Bar container */}
+                      <div className="w-full h-[calc(100%-24px)] flex items-end justify-center">
+                        {/* Bar */}
+                        <div
+                          className={`w-10 max-w-full rounded-t-lg bg-gradient-to-t ${barColors[index]} shadow-lg ${barShadows[index]} 
+                            transition-all duration-500 ease-out cursor-pointer hover:scale-105 hover:brightness-110
+                            ${isToday ? 'ring-2 ring-white/30 ring-offset-2 ring-offset-slate-800' : ''}`}
+                          style={{ 
+                            height: `${Math.max(heightPercent, 8)}%`,
+                            minHeight: '12px'
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Day label */}
+                      <span className={`text-xs font-semibold mt-2 ${
+                        isToday ? 'text-white bg-green-500 px-2 py-0.5 rounded' : 'text-slate-400'
+                      }`}>
+                        {data.day}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-700">
+          <div className="pt-4 border-t border-white/10">
             <p className="text-sm font-medium text-white mb-3">Domain-wise Analytics</p>
             <div className="grid grid-cols-2 gap-3">
               {domains.map((domain) => (
                 <div
                   key={domain.name}
-                  className="flex items-center justify-between bg-slate-700/50 rounded-lg p-3"
+                  className="flex items-center justify-between bg-white/5 border border-white/5 rounded-xl p-3 hover:bg-white/10 transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <div className={`w-3 h-3 rounded-full ${domain.color}`} />
@@ -539,14 +609,14 @@ function WatchHistorySection({
 }) {
   if (loading) {
     return (
-      <div className="bg-slate-800 border border-slate-700 rounded-xl mt-6 p-6 animate-pulse">
-        <div className="h-48 bg-slate-700 rounded"></div>
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl mt-6 p-6 animate-pulse">
+        <div className="h-48 bg-white/5 rounded"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl mt-6">
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl mt-6 overflow-hidden">
       <div className="p-6 pb-2">
         <h2 className="text-lg font-semibold text-white flex items-center gap-2">
           <History className="h-5 w-5 text-green-500" />
@@ -563,7 +633,7 @@ function WatchHistorySection({
             watchHistory.map((video) => (
               <div
                 key={video.id}
-                className="flex items-center gap-4 p-4 rounded-xl bg-slate-700/30 hover:bg-slate-700/50 transition-colors group cursor-pointer"
+                className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all group cursor-pointer"
               >
                 <div className="relative w-32 h-20 rounded-lg bg-slate-700 flex items-center justify-center shrink-0 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-blue-500/20" />
@@ -622,8 +692,8 @@ function TeacherVideoList({
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl">
-      <div className="border-b border-slate-700 p-4">
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+      <div className="border-b border-white/10 p-4">
         <h2 className="text-lg font-semibold text-white">Published Videos</h2>
         <p className="text-sm text-slate-400">Click a video to view detailed analytics</p>
       </div>
@@ -631,8 +701,8 @@ function TeacherVideoList({
         {videos.map((video) => (
           <div
             key={video.id}
-            className={`flex cursor-pointer flex-col gap-3 border-b border-slate-700/50 p-4 transition-colors ${
-              selectedVideoId === video.id ? "bg-slate-700/50" : "hover:bg-slate-700/30"
+            className={`flex cursor-pointer flex-col gap-3 border-b border-white/5 p-4 transition-colors ${
+              selectedVideoId === video.id ? "bg-white/10" : "hover:bg-white/5"
             }`}
             onMouseEnter={() => setHoveredId(video.id)}
             onMouseLeave={() => setHoveredId(null)}
@@ -660,20 +730,20 @@ function TeacherVideoList({
 
             {/* Expanded details on hover */}
             {hoveredId === video.id && (
-              <div className="grid grid-cols-4 gap-3 border-t border-slate-700/50 pt-3">
-                <div className="rounded-lg bg-slate-700/50 p-2 text-center">
+              <div className="grid grid-cols-4 gap-3 border-t border-white/10 pt-3">
+                <div className="rounded-xl bg-white/5 border border-white/5 p-2 text-center">
                   <p className="font-semibold text-white">{video.revenue}</p>
                   <p className="text-xs text-slate-400">Revenue</p>
                 </div>
-                <div className="rounded-lg bg-slate-700/50 p-2 text-center">
+                <div className="rounded-xl bg-white/5 border border-white/5 p-2 text-center">
                   <p className="font-semibold text-white">{video.watchTime}</p>
                   <p className="text-xs text-slate-400">Watch Time</p>
                 </div>
-                <div className="rounded-lg bg-slate-700/50 p-2 text-center">
+                <div className="rounded-xl bg-white/5 border border-white/5 p-2 text-center">
                   <p className="font-semibold text-white">{video.engagement}</p>
                   <p className="text-xs text-slate-400">Engagement</p>
                 </div>
-                <div className="rounded-lg bg-slate-700/50 p-2 text-center">
+                <div className="rounded-xl bg-white/5 border border-white/5 p-2 text-center">
                   <p className="font-semibold text-white">{video.completionRate}</p>
                   <p className="text-xs text-slate-400">Completion</p>
                 </div>
@@ -743,7 +813,7 @@ function VideoViewsAnalytics({
   // Show placeholder when no video selected
   if (!selectedVideo) {
     return (
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 flex items-center justify-center h-full min-h-[300px]">
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex items-center justify-center h-full min-h-[300px]">
         <p className="text-slate-400">Select a video to view detailed analytics</p>
       </div>
     );
@@ -767,15 +837,15 @@ function VideoViewsAnalytics({
   const areaPoints = `0,100 ${points} 100,100`;
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl">
-      <div className="border-b border-slate-700 p-4 flex items-start justify-between">
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+      <div className="border-b border-white/10 p-4 flex items-start justify-between">
         <div className="transition-opacity duration-300" style={{ opacity: isTransitioning ? 0.7 : 1 }}>
           <h2 className="text-lg font-semibold text-white">Views Analytics</h2>
           <p className="text-sm text-slate-400 transition-all duration-300">{selectedVideo.title}</p>
         </div>
         <button
           onClick={onClose}
-          className="p-2 rounded-lg hover:bg-slate-700 transition-colors group"
+          className="p-2 rounded-lg hover:bg-white/10 transition-colors group"
           title="Close analytics"
         >
           <svg className="h-5 w-5 text-slate-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -813,7 +883,7 @@ function VideoViewsAnalytics({
           {displayData.map((d) => (
             <div
               key={d.month}
-              className="rounded-lg bg-slate-700/50 p-3 text-center transition-all duration-300"
+              className="rounded-xl bg-white/5 border border-white/5 p-3 text-center transition-all duration-300"
               style={{ transform: isTransitioning ? 'scale(0.98)' : 'scale(1)' }}
             >
               <p className="text-lg font-semibold text-white tabular-nums">{d.views.toLocaleString()}</p>
@@ -832,15 +902,15 @@ function VideoViewsAnalytics({
 function PaymentLogSidebar({ paymentLog, loading }: { paymentLog: PaymentLogItem[], loading: boolean }) {
   if (loading) {
     return (
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 animate-pulse">
-        <div className="h-64 bg-slate-700 rounded"></div>
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 animate-pulse">
+        <div className="h-64 bg-white/5 rounded"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
-      <div className="p-4 border-b border-slate-700 bg-slate-800/80 sticky top-0">
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+      <div className="p-4 border-b border-white/10 backdrop-blur-sm sticky top-0">
         <h3 className="text-lg font-semibold text-white flex items-center gap-2">
           <Receipt className="h-5 w-5 text-green-500" />
           Payment History
@@ -849,22 +919,13 @@ function PaymentLogSidebar({ paymentLog, loading }: { paymentLog: PaymentLogItem
       </div>
       
       <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600">
-        <div className="divide-y divide-slate-700/50">
+        <div className="divide-y divide-white/5">
           {paymentLog.map((item) => (
-            <div key={item.id} className="p-4 hover:bg-slate-700/30 transition-colors">
+            <div key={item.id} className="p-4 hover:bg-white/5 transition-colors">
               <div className="flex items-start gap-3">
                 {/* Icon */}
-                <div className={`p-2 rounded-lg shrink-0 ${
-                  item.type === 'charge' ? 'bg-red-500/10' : 
-                  item.type === 'refund' ? 'bg-blue-500/10' : 'bg-green-500/10'
-                }`}>
-                  {item.type === 'charge' ? (
-                    <ArrowUpRight className={`h-4 w-4 text-red-400`} />
-                  ) : item.type === 'refund' ? (
-                    <ArrowDownLeft className={`h-4 w-4 text-blue-400`} />
-                  ) : (
-                    <Plus className={`h-4 w-4 text-green-400`} />
-                  )}
+                <div className="p-2 rounded-xl shrink-0 bg-gradient-to-br from-emerald-500/20 to-green-500/10 border border-emerald-500/20">
+                  <ArrowUpRight className="h-4 w-4 text-emerald-400" />
                 </div>
                 
                 {/* Content */}
@@ -881,15 +942,12 @@ function PaymentLogSidebar({ paymentLog, loading }: { paymentLog: PaymentLogItem
                   </div>
                 </div>
                 
-                {/* Amount */}
-                <div className={`text-right shrink-0 ${
-                  item.type === 'charge' ? 'text-red-400' : 
-                  item.type === 'refund' ? 'text-blue-400' : 'text-green-400'
-                }`}>
+                {/* Amount - always positive, same color */}
+                <div className="text-right shrink-0 text-emerald-400">
                   <p className="text-sm font-bold">
-                    {item.type === 'charge' ? '-' : '+'}₹{item.amount.toFixed(2)}
+                    ₹{item.amount.toFixed(2)}
                   </p>
-                  <p className="text-xs opacity-70 capitalize">{item.type}</p>
+                  <p className="text-xs text-slate-400 capitalize">{item.type}</p>
                 </div>
               </div>
             </div>
@@ -898,11 +956,11 @@ function PaymentLogSidebar({ paymentLog, loading }: { paymentLog: PaymentLogItem
       </div>
       
       {/* Summary footer */}
-      <div className="p-4 border-t border-slate-700 bg-slate-800/80">
+      <div className="p-4 border-t border-white/10 backdrop-blur-sm">
         <div className="flex justify-between items-center">
           <span className="text-xs text-slate-400">Total Spent (7 days)</span>
-          <span className="text-sm font-bold text-red-400">
-            -₹{paymentLog.filter(p => p.type === 'charge').reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
+          <span className="text-sm font-bold text-emerald-400">
+            ₹{paymentLog.filter(p => p.type === 'charge').reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
           </span>
         </div>
       </div>
@@ -914,15 +972,15 @@ function PaymentLogSidebar({ paymentLog, loading }: { paymentLog: PaymentLogItem
 function EarningsLogSidebar({ earningsLog, loading }: { earningsLog: EarningsLogItem[], loading: boolean }) {
   if (loading) {
     return (
-      <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 animate-pulse">
-        <div className="h-64 bg-slate-700 rounded"></div>
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 animate-pulse">
+        <div className="h-64 bg-white/5 rounded"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
-      <div className="p-4 border-b border-slate-700 bg-slate-800/80 sticky top-0">
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+      <div className="p-4 border-b border-white/10 backdrop-blur-sm sticky top-0">
         <h3 className="text-lg font-semibold text-white flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-green-500" />
           Recent Earnings
@@ -931,9 +989,9 @@ function EarningsLogSidebar({ earningsLog, loading }: { earningsLog: EarningsLog
       </div>
       
       <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600">
-        <div className="divide-y divide-slate-700/50">
+        <div className="divide-y divide-white/5">
           {earningsLog.map((item) => (
-            <div key={item.id} className="p-4 hover:bg-slate-700/30 transition-colors">
+            <div key={item.id} className="p-4 hover:bg-white/5 transition-colors">
               <div className="flex items-start gap-3">
                 {/* Student initial */}
                 <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 flex items-center justify-center shrink-0">
@@ -968,7 +1026,7 @@ function EarningsLogSidebar({ earningsLog, loading }: { earningsLog: EarningsLog
       </div>
       
       {/* Summary footer */}
-      <div className="p-4 border-t border-slate-700 bg-slate-800/80">
+      <div className="p-4 border-t border-white/10 backdrop-blur-sm">
         <div className="flex justify-between items-center">
           <span className="text-xs text-slate-400">Total Earned (7 days)</span>
           <span className="text-sm font-bold text-green-400">
@@ -996,13 +1054,13 @@ const BASELINE_STUDENT_STATS = {
 };
 
 const BASELINE_WEEKLY_DATA: WeeklyDataPoint[] = [
-  { day: "Mon", hours: 2.0 },
-  { day: "Tue", hours: 2.5 },
-  { day: "Wed", hours: 1.5 },
-  { day: "Thu", hours: 3.0 },
-  { day: "Fri", hours: 2.0 },
-  { day: "Sat", hours: 4.0 },
-  { day: "Sun", hours: 3.0 },
+  { day: "Mon", hours: 3.5 },
+  { day: "Tue", hours: 5.0 },
+  { day: "Wed", hours: 2.5 },
+  { day: "Thu", hours: 7.0 },
+  { day: "Fri", hours: 4.5 },
+  { day: "Sat", hours: 8.5 },
+  { day: "Sun", hours: 6.0 },
 ];
 
 const BASELINE_DOMAINS: DomainStat[] = [
@@ -1294,7 +1352,18 @@ const AccountDashboard = () => {
           const balanceData = await balanceRes.value.json();
           setWalletBalance(balanceData.balance || 0); // Use actual balance from backend
         } else {
-          setWalletBalance(200); // Default for new users (matches backend INITIAL_BALANCE)
+          // Fallback: try public balance endpoint
+          try {
+            const publicRes = await fetch(`${BACKEND_URL}/api/wallet/balance-public`);
+            if (publicRes.ok) {
+              const publicData = await publicRes.json();
+              setWalletBalance(publicData.balance || 200);
+            } else {
+              setWalletBalance(200); // Default for new users
+            }
+          } catch {
+            setWalletBalance(200); // Default for new users (matches backend INITIAL_BALANCE)
+          }
         }
 
       } catch (err) {

@@ -938,9 +938,13 @@ async def get_finternet_wallet_balance(
 
 @app.get("/api/wallet/balance-public")
 async def get_public_wallet_balance():
-    """Public endpoint for demo - returns default balance"""
+    """Public endpoint for demo - returns balance from in-memory test user tracking"""
+    # Use the test user tracking from WalletService
+    test_user_id = "test-admin-001"
+    balance = await WalletService.get_balance(test_user_id)
+    print(f"💰 Balance check for {test_user_id}: ₹{balance}")
     return {
-        "balance": INITIAL_BALANCE_RUPEES,
+        "balance": balance,
         "currency": "INR"
     }
 
@@ -1019,12 +1023,16 @@ async def get_finternet_payment_status(intent_id: str):
             payment["confirmations"] += 1
         else:
             payment["status"] = "SUCCEEDED"
-            # Deposit to user's Supabase wallet when payment settles
-            if payment.get("user_id"):
-                try:
-                    await WalletService.deposit(payment["user_id"], payment["amount"])
-                except:
-                    pass  # Silently fail if deposit fails
+            # Add to test user's in-memory balance when payment settles
+            test_user_id = payment.get("user_id") or "test-admin-001"
+            amount = payment["amount"]
+            
+            # Update in-memory balance for test user
+            from wallet_service import TEST_USER_BALANCES, WalletService
+            if test_user_id not in TEST_USER_BALANCES:
+                TEST_USER_BALANCES[test_user_id] = WalletService.INITIAL_BALANCE
+            TEST_USER_BALANCES[test_user_id] += amount
+            print(f"💳 Payment settled! Added ₹{amount} to {test_user_id}. New balance: ₹{TEST_USER_BALANCES[test_user_id]}")
     
     if payment["status"] == "SUCCEEDED":
         payment["status"] = "SETTLED"
