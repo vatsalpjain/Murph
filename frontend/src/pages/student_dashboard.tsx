@@ -1,3 +1,4 @@
+// @AI-IGNORE - Legacy file. Student dashboard is now in AccountDashboard.tsx.
 "use client"
 
 import {

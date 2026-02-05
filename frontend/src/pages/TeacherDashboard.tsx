@@ -44,36 +44,205 @@ export default function TeacherDashboard() {
             setIsLoading(true);
             setError(null);
 
-            // Fetch all analytics data in parallel
-            const [analyticsRes, earningsRes, scoresRes, popularRes] = await Promise.all([
-                apiClient.get('/api/teacher/dashboard'),
-                apiClient.get('/api/teacher/lecture-earnings'),
-                apiClient.get('/api/teacher/student-scores'),
-                apiClient.get('/api/teacher/popular-lectures')
+            // Simulate loading delay
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            // Mock analytics data
+            setAnalytics({
+                total_earnings: 45678 + Math.random() * 10000,
+                monthly_earnings: 12340 + Math.random() * 3000,
+                quality_bonus_earned: 2500 + Math.random() * 1000,
+                total_sessions: 127 + Math.floor(Math.random() * 50),
+                total_students: 86 + Math.floor(Math.random() * 30),
+                average_rating: 4.3 + Math.random() * 0.6,
+                total_reviews: 42 + Math.floor(Math.random() * 20),
+                is_verified: true
+            });
+
+            // Mock lecture earnings
+            setLectureEarnings([
+                {
+                    course_id: '1',
+                    course_title: 'Advanced React Patterns & Architecture',
+                    category: 'Web Development',
+                    num_lectures: 18,
+                    total_sessions: 45,
+                    total_students: 32,
+                    total_earnings: 8450 + Math.random() * 2000,
+                    avg_earnings_per_session: 187.78,
+                    price_per_minute: 3.5
+                },
+                {
+                    course_id: '2',
+                    course_title: 'Machine Learning Fundamentals',
+                    category: 'AI/ML',
+                    num_lectures: 24,
+                    total_sessions: 58,
+                    total_students: 41,
+                    total_earnings: 12300 + Math.random() * 3000,
+                    avg_earnings_per_session: 212.07,
+                    price_per_minute: 4.2
+                },
+                {
+                    course_id: '3',
+                    course_title: 'Data Structures & Algorithms in Python',
+                    category: 'Programming',
+                    num_lectures: 32,
+                    total_sessions: 72,
+                    total_students: 55,
+                    total_earnings: 15670 + Math.random() * 4000,
+                    avg_earnings_per_session: 217.64,
+                    price_per_minute: 3.8
+                },
+                {
+                    course_id: '4',
+                    course_title: 'System Design Interview Masterclass',
+                    category: 'Career',
+                    num_lectures: 15,
+                    total_sessions: 34,
+                    total_students: 28,
+                    total_earnings: 7250 + Math.random() * 1500,
+                    avg_earnings_per_session: 213.24,
+                    price_per_minute: 4.5
+                },
+                {
+                    course_id: '5',
+                    course_title: 'Cloud Computing with AWS',
+                    category: 'Cloud',
+                    num_lectures: 20,
+                    total_sessions: 38,
+                    total_students: 30,
+                    total_earnings: 9100 + Math.random() * 2000,
+                    avg_earnings_per_session: 239.47,
+                    price_per_minute: 4.0
+                }
             ]);
 
-            if (analyticsRes.ok) {
-                const data = await analyticsRes.json();
-                setAnalytics(data);
-            }
+            // Mock student scores - matching StudentScoresTable interface
+            setStudentScores([
+                {
+                    session_id: 'sess_1',
+                    student_name: 'Rahul Sharma',
+                    student_email: 'rahul.sharma@email.com',
+                    course_title: 'Advanced React Patterns',
+                    assessment_score: 87,
+                    discount_eligible: false,
+                    session_date: '2026-02-04',
+                    duration_seconds: 3600
+                },
+                {
+                    session_id: 'sess_2',
+                    student_name: 'Priya Patel',
+                    student_email: 'priya.patel@email.com',
+                    course_title: 'Machine Learning Fundamentals',
+                    assessment_score: 92,
+                    discount_eligible: true,
+                    session_date: '2026-02-05',
+                    duration_seconds: 4200
+                },
+                {
+                    session_id: 'sess_3',
+                    student_name: 'Amit Kumar',
+                    student_email: 'amit.kumar@email.com',
+                    course_title: 'Data Structures & Algorithms',
+                    assessment_score: 78,
+                    discount_eligible: false,
+                    session_date: '2026-02-03',
+                    duration_seconds: 2800
+                },
+                {
+                    session_id: 'sess_4',
+                    student_name: 'Sneha Reddy',
+                    student_email: 'sneha.reddy@email.com',
+                    course_title: 'System Design Interview',
+                    assessment_score: 95,
+                    discount_eligible: true,
+                    session_date: '2026-02-04',
+                    duration_seconds: 3200
+                },
+                {
+                    session_id: 'sess_5',
+                    student_name: 'Vikram Singh',
+                    student_email: 'vikram.singh@email.com',
+                    course_title: 'Cloud Computing with AWS',
+                    assessment_score: 88,
+                    discount_eligible: false,
+                    session_date: '2026-02-05',
+                    duration_seconds: 3500
+                }
+            ]);
 
-            if (earningsRes.ok) {
-                const data = await earningsRes.json();
-                setLectureEarnings(data.lectures || []);
-            }
-
-            if (scoresRes.ok) {
-                const data = await scoresRes.json();
-                setStudentScores(data.student_scores || []);
-            }
-
-            if (popularRes.ok) {
-                const data = await popularRes.json();
-                setPopularLectures(data.popular_lectures || []);
-            }
+            // Mock popular lectures - matching PopularLecturesChart interface
+            setPopularLectures([
+                {
+                    course_id: '1',
+                    course_title: 'Introduction to React Hooks',
+                    category: 'Web Development',
+                    total_enrollments: 245,
+                    total_sessions: 52,
+                    completed_sessions: 41,
+                    completion_rate: 78,
+                    total_revenue: 3450,
+                    average_rating: 4.7,
+                    total_reviews: 23,
+                    is_active: true
+                },
+                {
+                    course_id: '2',
+                    course_title: 'Neural Networks Deep Dive',
+                    category: 'AI/ML',
+                    total_enrollments: 312,
+                    total_sessions: 68,
+                    completed_sessions: 58,
+                    completion_rate: 85,
+                    total_revenue: 4200,
+                    average_rating: 4.8,
+                    total_reviews: 31,
+                    is_active: true
+                },
+                {
+                    course_id: '3',
+                    course_title: 'Binary Trees and Traversals',
+                    category: 'Data Structures',
+                    total_enrollments: 278,
+                    total_sessions: 61,
+                    completed_sessions: 49,
+                    completion_rate: 80,
+                    total_revenue: 3890,
+                    average_rating: 4.6,
+                    total_reviews: 27,
+                    is_active: true
+                },
+                {
+                    course_id: '4',
+                    course_title: 'Microservices Architecture',
+                    category: 'System Design',
+                    total_enrollments: 198,
+                    total_sessions: 45,
+                    completed_sessions: 38,
+                    completion_rate: 84,
+                    total_revenue: 3100,
+                    average_rating: 4.9,
+                    total_reviews: 18,
+                    is_active: true
+                },
+                {
+                    course_id: '5',
+                    course_title: 'AWS Lambda & Serverless',
+                    category: 'Cloud',
+                    total_enrollments: 234,
+                    total_sessions: 48,
+                    completed_sessions: 36,
+                    completion_rate: 75,
+                    total_revenue: 3650,
+                    average_rating: 4.5,
+                    total_reviews: 21,
+                    is_active: true
+                }
+            ]);
 
         } catch (err) {
-            console.error('Error fetching dashboard data:', err);
+            console.error('Error loading dashboard data:', err);
             setError('Failed to load dashboard data');
         } finally {
             setIsLoading(false);

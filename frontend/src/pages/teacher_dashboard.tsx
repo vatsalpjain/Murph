@@ -1,3 +1,4 @@
+// @AI-IGNORE - Legacy file. Teacher dashboard is now in AccountDashboard.tsx (Option D features integrated).
 "use client";
 
 import { useState, useEffect } from "react";

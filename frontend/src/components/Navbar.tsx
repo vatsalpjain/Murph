@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { Bell, Search } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Bell, Search, LogOut, LayoutDashboard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 interface NavbarProps {
   walletBalance: number;
@@ -7,6 +9,47 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ walletBalance }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    if (isProfileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileMenuOpen]);
+
+  const handleDashboard = () => {
+    setIsProfileMenuOpen(false);
+    if (user?.role === 'teacher') {
+      navigate('/teacher-dashboard');
+    } else {
+      navigate('/student-dashboard');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsProfileMenuOpen(false);
+    logout();
+    navigate('/');
+  };
+
+  // Get user's first letter for avatar
+  const getUserInitial = () => {
+    if (!user?.name) return 'U';
+    return user.name.charAt(0).toUpperCase();
+  };
 
   const trendingTopics = [
     'artificial intelligence',
@@ -134,11 +177,45 @@ const Navbar: React.FC<NavbarProps> = ({ walletBalance }) => {
             </button>
 
             {/* Profile */}
-            <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm font-bold">
-                A
-              </div>
-            </button>
+            <div className="relative" ref={profileMenuRef}>
+              <button 
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm font-bold">
+                  {getUserInitial()}
+                </div>
+              </button>
+
+              {/* Dropdown Menu */}
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                  {/* User Info */}
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
+                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                    <p className="text-xs text-emerald-600 mt-1 capitalize">{user?.role}</p>
+                  </div>
+
+                  {/* Menu Items */}
+                  <button
+                    onClick={handleDashboard}
+                    className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    <span>Dashboard</span>
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Mobile Search Toggle */}
             <button className="md:hidden p-2 hover:bg-gray-800 rounded-lg transition-colors">

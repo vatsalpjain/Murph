@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Play, Search, Loader, MessageCircle, Send } from 'lucide-react';
+import { ArrowLeft, Play, Search, Loader, MessageCircle, Send, Share2 } from 'lucide-react';
 
 interface YouTubeVideo {
   id: string;
@@ -12,9 +12,10 @@ interface YouTubeVideo {
 
 const VideoPlayer = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const domain = searchParams.get('domain') || 'Programming';
   const query = searchParams.get('q') || '';
+  const videoIdParam = searchParams.get('v'); // Support deep linking with ?v=videoId
   const searchTerm = (query || domain).trim();
   const apiKey = import.meta.env.VITE_YT_API_KEY as string | undefined;
 
@@ -103,6 +104,45 @@ const VideoPlayer = () => {
       isActive = false;
     };
   }, [apiKey, domain, searchTerm]);
+
+  // Handle deep linking - if ?v=videoId is provided, select that video
+  useEffect(() => {
+    if (videoIdParam && videos.length > 0) {
+      const linkedVideo = videos.find(v => v.id === videoIdParam);
+      if (linkedVideo) {
+        setSelectedVideo(linkedVideo);
+      }
+    }
+  }, [videoIdParam, videos]);
+
+  // Update URL when video is selected (for sharing)
+  const updateUrlWithVideo = (videoId: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('v', videoId);
+    setSearchParams(newParams, { replace: true });
+  };
+
+  // Share current video URL
+  const handleShare = async () => {
+    if (!selectedVideo) return;
+    
+    const shareUrl = `${window.location.origin}/video-player?v=${selectedVideo.id}`;
+    
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: selectedVideo.title,
+          text: `Check out this video: ${selectedVideo.title}`,
+          url: shareUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Link copied to clipboard!');
+      }
+    } catch (err) {
+      console.error('Share failed:', err);
+    }
+  };
 
   // Initialize YouTube player when selected video changes
   useEffect(() => {
@@ -220,6 +260,7 @@ const VideoPlayer = () => {
 
   const handleSelectVideo = (video: YouTubeVideo) => {
     setSelectedVideo(video);
+    updateUrlWithVideo(video.id); // Update URL for deep linking
     setElapsed(0);
     setTotalCost(0);
     setIsLocked(false);
@@ -235,7 +276,7 @@ const VideoPlayer = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/home')}
                 className="text-emerald-400 hover:text-emerald-300 transition-colors"
               >
                 <ArrowLeft className="w-6 h-6" />
@@ -247,6 +288,16 @@ const VideoPlayer = () => {
                 <p className="text-gray-400 text-sm">YouTube Learning Platform</p>
               </div>
             </div>
+            {/* Share Button */}
+            {selectedVideo && (
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 rounded-lg transition-colors"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+            )}
           </div>
         </div>
       </header>

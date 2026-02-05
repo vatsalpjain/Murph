@@ -79,7 +79,7 @@ const FindSession: React.FC = () => {
   };
 
   const handleBackClick = () => {
-    navigate('/');
+    navigate('/home');
   };
 
   return (

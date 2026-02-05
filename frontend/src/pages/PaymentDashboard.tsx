@@ -223,7 +223,7 @@ const PaymentDashboard = () => {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button
-                                onClick={() => navigate('/')}
+                                onClick={() => navigate('/home')}
                                 className="text-slate-400 hover:text-white transition-colors"
                             >
                                 <ArrowLeft className="w-6 h-6" />

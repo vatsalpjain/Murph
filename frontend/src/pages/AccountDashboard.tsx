@@ -64,6 +64,24 @@ interface WatchHistoryItem {
   status: string;
 }
 
+// Teacher video analytics types
+interface VideoMonthlyData {
+  month: string;
+  views: number;
+}
+
+interface TeacherVideo {
+  id: number;
+  title: string;
+  publishDate: string;
+  views: string;
+  revenue: string;
+  watchTime: string;
+  engagement: string;
+  completionRate: string;
+  monthlyViews: VideoMonthlyData[];
+}
+
 // ==================== CONSTANTS ====================
 
 const BACKEND_URL = 'http://localhost:8000';
@@ -81,6 +99,95 @@ const domainColors: Record<string, string> = {
   "Music": "bg-pink-500/20 text-pink-400 border-pink-500/30",
   "Fitness": "bg-red-500/20 text-red-400 border-red-500/30",
 };
+
+// Mock video data for teacher analytics (from Option D)
+const teacherVideosData: TeacherVideo[] = [
+  {
+    id: 1,
+    title: "Advanced Calculus - Integration Techniques",
+    publishDate: "Jan 15, 2026",
+    views: "45.2K",
+    revenue: "₹8,450",
+    watchTime: "245 hrs",
+    engagement: "72%",
+    completionRate: "68%",
+    monthlyViews: [
+      { month: "Jan", views: 8200 },
+      { month: "Feb", views: 9100 },
+      { month: "Mar", views: 7800 },
+      { month: "Apr", views: 9900 },
+      { month: "May", views: 10200 },
+    ],
+  },
+  {
+    id: 2,
+    title: "Physics: Quantum Mechanics Fundamentals",
+    publishDate: "Jan 12, 2026",
+    views: "38.1K",
+    revenue: "₹7,120",
+    watchTime: "189 hrs",
+    engagement: "65%",
+    completionRate: "61%",
+    monthlyViews: [
+      { month: "Jan", views: 6500 },
+      { month: "Feb", views: 7200 },
+      { month: "Mar", views: 6800 },
+      { month: "Apr", views: 8100 },
+      { month: "May", views: 9500 },
+    ],
+  },
+  {
+    id: 3,
+    title: "Organic Chemistry - Reaction Mechanisms",
+    publishDate: "Jan 10, 2026",
+    views: "52.8K",
+    revenue: "₹9,890",
+    watchTime: "312 hrs",
+    engagement: "78%",
+    completionRate: "74%",
+    monthlyViews: [
+      { month: "Jan", views: 9200 },
+      { month: "Feb", views: 10100 },
+      { month: "Mar", views: 9800 },
+      { month: "Apr", views: 11200 },
+      { month: "May", views: 12500 },
+    ],
+  },
+  {
+    id: 4,
+    title: "Data Structures - Binary Trees Explained",
+    publishDate: "Jan 8, 2026",
+    views: "61.3K",
+    revenue: "₹11,250",
+    watchTime: "356 hrs",
+    engagement: "81%",
+    completionRate: "76%",
+    monthlyViews: [
+      { month: "Jan", views: 10500 },
+      { month: "Feb", views: 11800 },
+      { month: "Mar", views: 12100 },
+      { month: "Apr", views: 13600 },
+      { month: "May", views: 13300 },
+    ],
+  },
+  {
+    id: 5,
+    title: "Machine Learning - Neural Networks Intro",
+    publishDate: "Jan 5, 2026",
+    views: "89.7K",
+    revenue: "₹16,800",
+    watchTime: "412 hrs",
+    engagement: "85%",
+    completionRate: "82%",
+    monthlyViews: [
+      { month: "Jan", views: 15300 },
+      { month: "Feb", views: 17200 },
+      { month: "Mar", views: 18100 },
+      { month: "Apr", views: 19400 },
+      { month: "May", views: 19700 },
+    ],
+  },
+];
 
 // Generate random teacher data for demonstration
 const generateRandomTeacherData = () => {
@@ -454,6 +561,225 @@ function WatchHistorySection({
   );
 }
 
+// ==================== TEACHER VIDEO ANALYTICS COMPONENTS ====================
+
+// Published videos list with hover-to-expand details
+function TeacherVideoList({
+  videos,
+  selectedVideoId,
+  onSelectVideo
+}: {
+  videos: TeacherVideo[];
+  selectedVideoId: number | null;
+  onSelectVideo: (id: number) => void;
+}) {
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
+
+  return (
+    <div className="bg-slate-800 border border-slate-700 rounded-xl">
+      <div className="border-b border-slate-700 p-4">
+        <h2 className="text-lg font-semibold text-white">Published Videos</h2>
+        <p className="text-sm text-slate-400">Click a video to view detailed analytics</p>
+      </div>
+      <div className="max-h-[500px] overflow-y-auto">
+        {videos.map((video) => (
+          <div
+            key={video.id}
+            className={`flex cursor-pointer flex-col gap-3 border-b border-slate-700/50 p-4 transition-colors ${
+              selectedVideoId === video.id ? "bg-slate-700/50" : "hover:bg-slate-700/30"
+            }`}
+            onMouseEnter={() => setHoveredId(video.id)}
+            onMouseLeave={() => setHoveredId(null)}
+            onClick={() => onSelectVideo(video.id)}
+          >
+            {/* Video basic info */}
+            <div className="flex gap-4">
+              <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-700">
+                <div className="flex h-full w-full items-center justify-center">
+                  <Play className="h-6 w-6 text-slate-500" />
+                </div>
+                {hoveredId === video.id && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                    <Play className="h-8 w-8 text-green-500" />
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate font-medium text-white">{video.title}</h3>
+                <p className="text-sm text-slate-400">
+                  {video.publishDate} • {video.views} views
+                </p>
+              </div>
+            </div>
+
+            {/* Expanded details on hover */}
+            {hoveredId === video.id && (
+              <div className="grid grid-cols-4 gap-3 border-t border-slate-700/50 pt-3">
+                <div className="rounded-lg bg-slate-700/50 p-2 text-center">
+                  <p className="font-semibold text-white">{video.revenue}</p>
+                  <p className="text-xs text-slate-400">Revenue</p>
+                </div>
+                <div className="rounded-lg bg-slate-700/50 p-2 text-center">
+                  <p className="font-semibold text-white">{video.watchTime}</p>
+                  <p className="text-xs text-slate-400">Watch Time</p>
+                </div>
+                <div className="rounded-lg bg-slate-700/50 p-2 text-center">
+                  <p className="font-semibold text-white">{video.engagement}</p>
+                  <p className="text-xs text-slate-400">Engagement</p>
+                </div>
+                <div className="rounded-lg bg-slate-700/50 p-2 text-center">
+                  <p className="font-semibold text-white">{video.completionRate}</p>
+                  <p className="text-xs text-slate-400">Completion</p>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Animated views analytics chart for selected video
+function VideoViewsAnalytics({
+  videos,
+  selectedVideoId,
+  onClose
+}: {
+  videos: TeacherVideo[];
+  selectedVideoId: number | null;
+  onClose: () => void;
+}) {
+  const selectedVideo = videos.find((v) => v.id === selectedVideoId);
+  const [animatedData, setAnimatedData] = useState<VideoMonthlyData[]>([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Animate chart data when video selection changes
+  useEffect(() => {
+    if (!selectedVideo) return;
+
+    setIsTransitioning(true);
+    const targetData = selectedVideo.monthlyViews;
+
+    // Initialize with zeros if no previous data
+    if (animatedData.length === 0) {
+      setAnimatedData(targetData.map(d => ({ month: d.month, views: 0 })));
+    }
+
+    // Smooth animation to new values
+    const duration = 800;
+    const startTime = Date.now();
+    const startData = animatedData.length > 0 ? animatedData : targetData.map(d => ({ month: d.month, views: 0 }));
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Easing function for smooth motion
+      const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+
+      const newData = targetData.map((target, i) => ({
+        month: target.month,
+        views: Math.round(startData[i].views + (target.views - startData[i].views) * easeOutCubic)
+      }));
+
+      setAnimatedData(newData);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setIsTransitioning(false);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [selectedVideoId]);
+
+  // Show placeholder when no video selected
+  if (!selectedVideo) {
+    return (
+      <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 flex items-center justify-center h-full min-h-[300px]">
+        <p className="text-slate-400">Select a video to view detailed analytics</p>
+      </div>
+    );
+  }
+
+  // Calculate chart dimensions
+  const displayData = animatedData.length > 0 ? animatedData : selectedVideo.monthlyViews;
+  const maxViews = Math.max(...displayData.map((d) => d.views), 1);
+  const minViews = Math.min(...displayData.map((d) => d.views));
+  const range = maxViews - minViews || 1;
+
+  // Generate SVG path points for the area chart
+  const points = displayData
+    .map((d, i) => {
+      const x = (i / (displayData.length - 1)) * 100;
+      const y = 100 - ((d.views - minViews) / range) * 80 - 10;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  const areaPoints = `0,100 ${points} 100,100`;
+
+  return (
+    <div className="bg-slate-800 border border-slate-700 rounded-xl">
+      <div className="border-b border-slate-700 p-4 flex items-start justify-between">
+        <div className="transition-opacity duration-300" style={{ opacity: isTransitioning ? 0.7 : 1 }}>
+          <h2 className="text-lg font-semibold text-white">Views Analytics</h2>
+          <p className="text-sm text-slate-400 transition-all duration-300">{selectedVideo.title}</p>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-2 rounded-lg hover:bg-slate-700 transition-colors group"
+          title="Close analytics"
+        >
+          <svg className="h-5 w-5 text-slate-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div className="p-6">
+        {/* Animated SVG area chart */}
+        <div className="relative h-48 w-full mb-6">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
+            <defs>
+              <linearGradient id="viewsGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <polygon fill="url(#viewsGradient)" points={areaPoints} style={{ transition: 'all 0.1s ease-out' }} />
+            <polyline fill="none" stroke="#10b981" strokeWidth="0.5" points={points} style={{ transition: 'all 0.1s ease-out' }} />
+            {displayData.map((d, i) => {
+              const x = (i / (displayData.length - 1)) * 100;
+              const y = 100 - ((d.views - minViews) / range) * 80 - 10;
+              return <circle key={i} cx={x} cy={y} r="1.5" fill="#10b981" style={{ transition: 'all 0.1s ease-out' }} />;
+            })}
+          </svg>
+          <div className="absolute bottom-0 left-0 flex w-full justify-between px-2 text-xs text-slate-400">
+            {displayData.map((d) => (
+              <span key={d.month}>{d.month}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Monthly view counts */}
+        <div className="grid grid-cols-5 gap-2">
+          {displayData.map((d) => (
+            <div
+              key={d.month}
+              className="rounded-lg bg-slate-700/50 p-3 text-center transition-all duration-300"
+              style={{ transform: isTransitioning ? 'scale(0.98)' : 'scale(1)' }}
+            >
+              <p className="text-lg font-semibold text-white tabular-nums">{d.views.toLocaleString()}</p>
+              <p className="text-xs text-slate-400">{d.month}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ==================== MAIN COMPONENT ====================
 
 const AccountDashboard = () => {
@@ -477,6 +803,8 @@ const AccountDashboard = () => {
 
   // State for teacher dashboard data
   const [teacherData, setTeacherData] = useState<any>(null);
+  // State for selected video in teacher analytics
+  const [selectedVideoId, setSelectedVideoId] = useState<number | null>(null);
 
   // Redirect to home if not authenticated - only once
   useEffect(() => {
@@ -614,6 +942,39 @@ const AccountDashboard = () => {
           )}
 
           <StatsCards stats={teacherStats} loading={loading} />
+
+          {/* Video Analytics Section - Animated grid with video list + chart */}
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold text-white mb-4">Video Performance Analytics</h2>
+            <div
+              className="grid gap-6 transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]"
+              style={{
+                gridTemplateColumns: selectedVideoId ? "minmax(350px, 1fr) 2fr" : "1fr",
+              }}
+            >
+              {/* Published videos list */}
+              <div className="transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]">
+                <TeacherVideoList
+                  videos={teacherVideosData}
+                  selectedVideoId={selectedVideoId}
+                  onSelectVideo={setSelectedVideoId}
+                />
+              </div>
+              {/* Animated views analytics panel */}
+              <div
+                className={`transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
+                  selectedVideoId ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full absolute pointer-events-none'
+                }`}
+                style={{ maxWidth: selectedVideoId ? '100%' : '0' }}
+              >
+                <VideoViewsAnalytics
+                  videos={teacherVideosData}
+                  selectedVideoId={selectedVideoId}
+                  onClose={() => setSelectedVideoId(null)}
+                />
+              </div>
+            </div>
+          </div>
 
           <div className="mt-8">
             <LectureEarningsTable lectures={teacherData.lectures} isLoading={loading} />

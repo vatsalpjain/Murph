@@ -1,3 +1,4 @@
+// @AI-IGNORE - Duplicate file. Use pages/VideoPlayer.tsx instead.
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Play, Search, Loader } from 'lucide-react';

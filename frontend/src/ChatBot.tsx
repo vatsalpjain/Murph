@@ -1,3 +1,4 @@
+// @AI-IGNORE - Duplicate file. Use components/ChatBot.tsx instead.
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Send, X } from 'lucide-react';
 
