@@ -187,6 +187,115 @@ async def health_check():
 
 
 # ============================================================================
+# COURSES ENDPOINTS (PUBLIC - For browsing courses)
+# ============================================================================
+
+@app.get("/api/courses")
+async def get_all_courses(category: Optional[str] = None, limit: int = 20):
+    """
+    Get all active courses for students to browse
+    Optionally filter by category
+    Returns course info with video details for player
+    PUBLIC: No authentication required
+    """
+    from database import supabase
+    
+    try:
+        query = supabase.table("courses")\
+            .select("*, teachers!inner(id, user_id, bio, is_verified, users!inner(name, email))")\
+            .eq("is_active", True)\
+            .limit(limit)
+        
+        if category:
+            query = query.ilike("category", f"%{category}%")
+        
+        result = query.execute()
+        
+        courses = []
+        for course in result.data or []:
+            teacher_info = course.get("teachers", {})
+            user_info = teacher_info.get("users", {})
+            content = course.get("content_structure", {})
+            
+            courses.append({
+                "id": course["id"],
+                "title": course["title"],
+                "description": course["description"],
+                "category": course["category"],
+                "price_per_minute": float(course["price_per_minute"]),
+                "total_duration_minutes": course["total_duration_minutes"],
+                "video_id": content.get("video_id"),
+                "video_url": content.get("video_url"),
+                "lectures": content.get("lectures", []),
+                "instructor": {
+                    "id": teacher_info.get("id"),
+                    "name": user_info.get("name", "Unknown Instructor"),
+                    "is_verified": teacher_info.get("is_verified", False)
+                },
+                "thumbnail": f"https://img.youtube.com/vi/{content.get('video_id', '')}/mqdefault.jpg",
+                "created_at": course["created_at"]
+            })
+        
+        return {"courses": courses, "total": len(courses)}
+    
+    except Exception as e:
+        print(f"Error fetching courses: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/courses/{course_id}")
+async def get_course_by_id(course_id: str):
+    """
+    Get single course details by ID
+    Returns full course info including lecture structure
+    PUBLIC: No authentication required
+    """
+    from database import supabase
+    
+    try:
+        result = supabase.table("courses")\
+            .select("*, teachers!inner(id, user_id, bio, is_verified, users!inner(name, email))")\
+            .eq("id", course_id)\
+            .single()\
+            .execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Course not found")
+        
+        course = result.data
+        teacher_info = course.get("teachers", {})
+        user_info = teacher_info.get("users", {})
+        content = course.get("content_structure", {})
+        
+        return {
+            "id": course["id"],
+            "title": course["title"],
+            "description": course["description"],
+            "category": course["category"],
+            "price_per_minute": float(course["price_per_minute"]),
+            "total_duration_minutes": course["total_duration_minutes"],
+            "video_id": content.get("video_id"),
+            "video_url": content.get("video_url"),
+            "lectures": content.get("lectures", []),
+            "instructor": {
+                "id": teacher_info.get("id"),
+                "name": user_info.get("name", "Unknown Instructor"),
+                "bio": teacher_info.get("bio"),
+                "is_verified": teacher_info.get("is_verified", False)
+            },
+            "thumbnail": f"https://img.youtube.com/vi/{content.get('video_id', '')}/mqdefault.jpg",
+            "is_active": course["is_active"],
+            "created_at": course["created_at"]
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error fetching course: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
 # SESSION ENDPOINTS (PROTECTED - Require Authentication)
 # ============================================================================
 

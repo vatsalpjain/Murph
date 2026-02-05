@@ -7,9 +7,35 @@ import CourseCard from '../components/CourseCard';
 import Footer from '../components/Footer';
 import CourseShortsPreview from '../components/CourseShortsPreview';
 import ChatBot from '../components/ChatBot';
+import { apiClient } from '../utils/api';
 import type { Short } from '../components/CourseShortsPreview';
 
-// Mock Data
+// Interface for courses from database
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  price_per_minute: number;
+  total_duration_minutes: number;
+  video_id: string;
+  video_url: string;
+  lectures: Array<{
+    id: number;
+    title: string;
+    duration_minutes: number;
+    video_timestamp_start: number;
+    video_timestamp_end: number;
+  }>;
+  instructor: {
+    id: string;
+    name: string;
+    is_verified: boolean;
+  };
+  thumbnail: string;
+}
+
+// Mock Data for Resume Session (will be replaced when sessions are implemented)
 const mockResumeSession = {
   courseTitle: 'Advanced React Patterns & Hooks',
   instructorName: 'Sarah Chen',
@@ -18,84 +44,6 @@ const mockResumeSession = {
   totalTime: '45:20',
   estimatedCost: 3.45,
 };
-
-const mockRecommendedSessions = [
-  {
-    id: 1,
-    title: 'Machine Learning Fundamentals',
-    instructor: 'Dr. James Wilson',
-    thumbnail: '/thumbnails/ml-fundamentals.svg',
-    duration: 120,
-    pricePerMinute: 0.05,
-    rating: 4.8,
-    reviewCount: 2340,
-    badge: 'Highly-Rated',
-    topic: 'machine learning',
-    relatedVideos: 'Artificial Intelligence, Neural Networks, TensorFlow',
-  },
-  {
-    id: 2,
-    title: 'Web Development Masterclass',
-    instructor: 'Emma Rodriguez',
-    thumbnail: '/thumbnails/web-dev-masterclass.svg',
-    duration: 90,
-    pricePerMinute: 0.04,
-    rating: 4.9,
-    reviewCount: 3120,
-    badge: 'Best-Seller',
-    topic: 'web development',
-    relatedVideos: 'React, JavaScript, Node.js, HTML/CSS',
-  },
-  {
-    id: 3,
-    title: 'Cloud Architecture Essentials',
-    instructor: 'Michael Zhang',
-    thumbnail: '/thumbnails/cloud-architecture.svg',
-    duration: 150,
-    pricePerMinute: 0.06,
-    rating: 4.7,
-    reviewCount: 1890,
-    topic: 'cloud computing',
-    relatedVideos: 'AWS, Azure, Google Cloud, DevOps',
-  },
-  {
-    id: 4,
-    title: 'Data Science Deep Dive',
-    instructor: 'Dr. Priya Sharma',
-    thumbnail: '/thumbnails/data-science.svg',
-    duration: 180,
-    pricePerMinute: 0.07,
-    rating: 4.9,
-    reviewCount: 2560,
-    badge: 'Trending',
-    topic: 'data science',
-    relatedVideos: 'Python, Pandas, Numpy, Data Analysis',
-  },
-  {
-    id: 5,
-    title: 'Product Management Bootcamp',
-    instructor: 'Alex Patterson',
-    thumbnail: '/thumbnails/product-management.svg',
-    duration: 100,
-    pricePerMinute: 0.05,
-    rating: 4.6,
-    reviewCount: 1450,
-    topic: 'product management',
-    relatedVideos: 'Project Management, Leadership, Agile, Scrum',
-  },
-  {
-    id: 6,
-    title: 'UI/UX Design Principles',
-    instructor: 'Lisa Johnson',
-    thumbnail: '/thumbnails/ui-ux-design.svg',
-    duration: 75,
-    pricePerMinute: 0.04,
-    rating: 4.8,
-    reviewCount: 2890,
-    topic: 'ui/ux design',
-    relatedVideos: 'Figma, Adobe XD, Wireframing, Prototyping',
-  },
-];
 
 const mockCategories = [
   {
@@ -183,6 +131,30 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [walletBalance] = useState<number>(125.50);
   const [shorts, setShorts] = useState<Short[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+
+  // Load courses from database
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        setIsLoadingCourses(true);
+        const response = await apiClient.get('/api/courses', { requiresAuth: false });
+        if (response.ok) {
+          const data = await response.json();
+          setCourses(data.courses || []);
+          console.log('Loaded courses from database:', data.courses);
+        } else {
+          console.error('Failed to fetch courses:', response.status);
+        }
+      } catch (error) {
+        console.error('Error loading courses:', error);
+      } finally {
+        setIsLoadingCourses(false);
+      }
+    };
+    loadCourses();
+  }, []);
 
   // Load course shorts metadata
   useEffect(() => {
@@ -217,6 +189,11 @@ const HomePage: React.FC = () => {
     navigate(`/video-player?domain=${encodeURIComponent(categoryName)}`);
   };
 
+  // Handle clicking on a course - navigate to video player with course video
+  const handleCourseClick = (course: Course) => {
+    navigate(`/video-player?v=${course.video_id}&courseId=${course.id}`);
+  };
+
   return (
     <div className="min-h-screen bg-gray-900">
       {/* Navbar */}
@@ -249,33 +226,86 @@ const HomePage: React.FC = () => {
       {/* Course Shorts Preview Section */}
       {shorts.length > 0 && <CourseShortsPreview shorts={shorts} />}
 
-      {/* AI Recommended Sessions */}
+      {/* Available Courses from Database */}
       <section className="bg-gray-900 py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-3xl font-bold text-white">Recommended for You</h2>
-            <span className="text-emerald-400">✨</span>
+            <h2 className="text-3xl font-bold text-white">Available Courses</h2>
+            <span className="text-emerald-400">📚</span>
           </div>
-          <p className="text-gray-400 mb-8">Handpicked sessions based on your interests</p>
+          <p className="text-gray-400 mb-8">Learn from our curated YouTube courses</p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockRecommendedSessions.map((session) => (
-              <CourseCard
-                key={session.id}
-                title={session.title}
-                instructor={session.instructor}
-                thumbnail={session.thumbnail}
-                duration={session.duration}
-                pricePerMinute={session.pricePerMinute}
-                rating={session.rating}
-                reviewCount={session.reviewCount}
-                badge={session.badge}
-                topic={session.topic}
-                relatedVideos={session.relatedVideos}
-                onViewPlaylist={() => navigate(`/video-player?q=${encodeURIComponent(session.topic)}`)}
-              />
-            ))}
-          </div>
+          {isLoadingCourses ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 animate-pulse">
+                  <div className="h-40 bg-gray-700" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-gray-700 rounded w-3/4" />
+                    <div className="h-3 bg-gray-700 rounded w-1/2" />
+                    <div className="h-3 bg-gray-700 rounded w-1/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : courses.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {courses.map((course) => (
+                <div
+                  key={course.id}
+                  onClick={() => handleCourseClick(course)}
+                  className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:shadow-xl hover:shadow-emerald-500/20 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                >
+                  {/* YouTube Thumbnail */}
+                  <div className="relative h-40 bg-gray-700 overflow-hidden">
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/thumbnails/default.svg';
+                      }}
+                    />
+                    <div className="absolute top-3 right-3 bg-emerald-400 text-gray-900 px-2 py-1 rounded text-xs font-semibold">
+                      {course.category.split(' ')[0]}
+                    </div>
+                    {course.instructor.is_verified && (
+                      <div className="absolute top-3 left-3 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold">
+                        ✓ Verified
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4">
+                    <h3 className="font-semibold text-white mb-2 line-clamp-2 text-sm">
+                      {course.title}
+                    </h3>
+                    <p className="text-xs text-gray-400 mb-2">by {course.instructor.name}</p>
+                    <p className="text-xs text-gray-500 mb-3 line-clamp-2">{course.description}</p>
+
+                    {/* Duration & Price */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-700">
+                      <div className="flex items-center gap-1 text-gray-400">
+                        <span className="text-xs">{course.total_duration_minutes} min</span>
+                        <span className="text-gray-600">•</span>
+                        <span className="text-xs">{course.lectures.length} lectures</span>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-emerald-400 font-bold text-sm">
+                          ₹{course.price_per_minute.toFixed(2)}/min
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-400">No courses available yet. Check back soon!</p>
+            </div>
+          )}
         </div>
       </section>
 
